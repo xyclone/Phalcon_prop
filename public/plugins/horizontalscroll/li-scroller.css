@@ -1,0 +1,74 @@
+/*.wrapper {
+  min-height: 100%;
+
+  margin-bottom: -142px; 
+}
+.wrapper:after {
+  content: "";
+  display: block;
+}
+
+.site-footer, .page-wrap:after {
+  height: 142px; 
+}
+.site-footer {
+  background: orange;
+}*/
+
+.footer {
+  position: fixed;
+  margin-right: auto;
+  margin-left: auto;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 1.5rem;
+  background-color: #ffffff;
+  text-align: center;
+  z-index: 1;
+  border-top: 1px solid #d2d6de !important;
+}
+
+}
+.tickercontainer { /* the outer div with the black border */
+background: #fff; 
+width: 70vw; 
+padding: 0;
+overflow: none; 
+top: 0;
+}
+.tickercontainer .mask { /* that serves as a mask. so you get a sort of padding both left and right */
+position: relative;
+width: 80vw; 
+overflow: hidden;
+margin-left: 210px!important;
+}
+ul.newsticker { /* that's your list */
+position: relative;
+left: 10px;
+font: bold 15px 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+list-style-type: none;
+margin: 0;
+padding: 0;
+}
+ul.newsticker li {
+float: left; /* important: display inline gives incorrect results when you check for elem's width */
+margin: 0;
+padding: 0;
+background: #fff;
+/*border: 1px solid #000000 !important;*/
+}
+ul.newsticker a {
+white-space: nowrap;
+padding: 0;
+color: #ff0000;
+/*font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+font-size: 12px;
+font-weight: bold;*/
+/*border: 1px solid #000;*/
+font: 10px bold 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+margin: 0 50px 0 0;
+} 
+ul.newsticker span {
+margin: 0 10px 0 0;
+} 

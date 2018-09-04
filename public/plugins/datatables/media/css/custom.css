@@ -1,0 +1,118 @@
+/*NEW DATATABLE*/
+@mixin dt-display-flex {
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+}
+@mixin dt-flex-11a {
+  -webkit-flex: 1 1 auto;
+  -ms-flex: 1 1 auto;
+  flex: 1 1 auto;
+}
+@mixin dt-flex-100 {
+  -webkit-flex: 1 0 0px;
+  -ms-flex: 1 0 0px;
+  flex: 1 0 0px;
+}
+@mixin dt-flex-vertical {
+  -webkit-flex-flow: column nowrap;
+  -ms-flex-flow: column nowrap;
+  flex-flow: column nowrap;
+}
+
+
+/*div.dataTables_wrapper {
+        width: 100%;
+        margin: 0 auto;
+    }*/
+
+table.dataTable thead th,
+table.dataTable tfoot th {
+  font-weight: bold;
+  background-color: #e7e7e7;
+}
+
+
+/* Datatable Buttons */
+table.dataTable th {
+    vertical-align: top !important;
+}
+input.searchfield {
+    padding-right: 50px;
+}
+input.searchfield-sm {
+    width: 150px;
+    border-left:1px solid #dee6ed;
+    border-top:1px solid #dee6ed;
+    border-bottom:1px solid #dee6ed;
+}
+button.clearDate, button.clear {
+    margin-left: -50px;
+    margin-top: -1px;
+    height: 23px;
+    width: 50px;
+    background: #a9a9a9;
+    color: #FFF;
+    border: 1px solid #a9a9a9;
+    border-top: 0px solid #a9a9a9;
+    -webkit-appearance: none;
+}
+/* ./Datatable Buttons */
+/*.margin_filter { margin-top: 10px; }
+.table-responsive { overflow-y:auto; }
+.ui-datatable {
+    display: table;
+}
+.ui-datatable table {
+    table-layout: auto !important;
+}   */
+
+table.dataTable tbody tr td {
+  vertical-align: middle!important;
+}
+
+/*table.dataTable tbody tr td a {
+  margin-top: 10px!important;
+  border: 1px solid #000;
+}*/
+
+tfoot { display: table-row-group;}
+
+table.dataTable tbody tr td a.btn,
+table.dataTable tbody tr td input { 
+  top:0!important;
+  bottom: 0!important;
+  margin-top:0!important; 
+  margin-bottom:0!important; 
+  padding-top:0!important; 
+  padding-bottom:0!important; 
+}
+table.dataTable tbody tr td .checkbox {
+  padding:0!important;
+  margin-top:-3px!important;
+  margin-bottom:-2px!important;
+  margin-left:5px!important;
+}
+table.dataTable tbody tr td .checkbox label {
+  min-height: 15px!important;
+}
+
+/*div.dataTables_processing { z-index: 1; background-color: none!important; }*/
+
+.dataTables_processing {
+    background-color: transparent!important;
+    border:none!important;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 40px;
+    margin-left: -50%;
+    margin-top: -25px;
+    padding-top: 20px;
+    text-align: center;
+}
+
+table.dataTable thead tr#filterrow > th {
+  background-color: #f2f2f2!important;
+}

@@ -1,0 +1,22 @@
+table.DTFC_Cloned thead,table.DTFC_Cloned tfoot{
+    background-color:white
+}
+div.DTFC_Blocker{
+    background-color:white
+}
+div.DTFC_LeftWrapper table.dataTable,div.DTFC_RightWrapper table.dataTable{
+    margin-bottom:0;
+    z-index:2
+}
+div.DTFC_LeftWrapper table.dataTable.no-footer,div.DTFC_RightWrapper table.dataTable.no-footer{
+    border-bottom:none
+}
+
+div.DTFC_LeftBodyLiner table.dataTable {
+	margin-top: -8px !important;
+	background-color:#fcfcfc !important;
+	/*display:none !important;*/
+}
+div.DTFC_LeftBodyLiner table thead tr {
+	display: none !important;
+}
