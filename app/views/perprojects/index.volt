@@ -15,42 +15,36 @@
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
             <div class="box box-primary">
                 <div class="box-header with-border">
-                    <h3 class="box-title"><i class="fa fa-list-ul" aria-hidden="true"></i> Per Projects</h3>
+                    <h3 class="box-title"><i class="fa fa-list-ul" aria-hidden="true"></i> Per Project</h3>
                 </div>
                 <div class="box-body">
                     <div class="table-responsive">
-                        <table id="table" class="table table-bordered table-hover">
+                        <table id="dt_table" class="table table-striped table-condensed table-hover" cellspacing="0" width="100%">
                             <thead>
                                 <tr>
-                                    <th align="center"><b>ID</b></th>
-                                    <th align="center"><b>Project Name</b></th>
-                                    <th align="center"><b>Median PSF</b></th>
-                                    <th align="center"><b>No. of Transaction</b></th>
-                                    <th align="center"><b>Unit Type</b></th>
-                                    <th align="center"><b>View Details</b></th>
+                                    {% if NameCols is not empty %}
+                                        {% for NameCol in NameCols %}
+                                            <th>{{NameCol}}</th>
+                                        {% endfor %}
+                                    {% endif %}
+                                </tr>
+                                <tr id="filterrow">
+                                    {% if NameCols is not empty %}
+                                        {% for NameCol in NameCols %}
+                                            <th class="input-filter">{{NameCol}}</th>
+                                        {% endfor %}
+                                    {% endif %}
                                 </tr>
                             </thead>
-                            <tbody id="listView">
-                                {% if perprojects is not empty %}
-                                    {% for x in perprojects %}
-                                        <tr id="del{{ x.id }}">
-                                            <td align="center">{{ x.id }}</td>
-                                            <td>{{ x.PerProjects_Project.project_name }}</td>   
-                                            <td>{{ x.median_psf }}</td>                                         
-                                            <td>{{ x.no_transactions }}</td>
-                                            <td>{{ x.PerProjects_PropertyUnits.name }}</td>
-                                            <td><a href="#" class="btn btn-xs btn-info ajax-modal" data-toggle="modal" title="Details Info" data-target="#modal-ajax-handler" data-action="Details Info" data-id="{{ x.id }}" data-name="{{ x.PerProjects_Project.project_name }}" ><i class="fa fa-eye fa-fw"></i></a> </td>
-                                        </tr>
-                                    {% endfor %}
-                                {% endif %}
-                            </tbody>
-                        </table>
+                        </table>      
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
 
 <!-- MODAL AJAX HANDLER -->
 {{ajax_modal}}

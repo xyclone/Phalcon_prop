@@ -832,9 +832,6 @@ class AllprojectsController extends ControllerBase
             //$saveProject = Projects::findFirst(["conditions"=>"id=?1","bind"=>[1=>$projectName[0]->id]]);
             foreach ($data as $field => $value) {
                 switch ($field) {
-                    case 'transaction_month':
-                        continue;
-                        break;
                     case 'project_type':
                         if($saveProject->$field!=$value) $updateDetails = true;
                         $saveProject->$field = (!empty($value)) ? $value : NULL;

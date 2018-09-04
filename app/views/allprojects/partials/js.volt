@@ -35,7 +35,7 @@
 
         $("div.DTFC_LeftBodyLiner table thead tr th").removeClass("sorting");
 
-        $('.select2').select2({theme: "bootstrap", width: "100%"});
+        $('.select2').select2({theme: "bootstrap", width: "100%", 'allowClear': false});
 
         //Replace thead filterRow to textfield search
         $('#dt_table thead tr#filterrow th').each( function () {

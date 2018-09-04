@@ -215,8 +215,7 @@ class UploadController extends ControllerBase
         if(!empty($insert)&&count($insert)>0) {
             foreach ($insert as $count => $post) {             
                 $project_Name = (strpos($post['project_name'], "'") !== false) ? strtoupper(preg_replace("/'/", "", $post['project_name'])) : strtoupper($filter->sanitize($post['project_name'], "string" ));
-                $projectName = Projects::findProject(['project_name'=>$project_Name,'project_type'=>strtoupper($post['project_type']),'project_property_type'=>strtoupper($post['proj_property_type'])]);  
-#echo '<pre>'; var_dump($projectName->toArray()); echo '</pre>'; die();                 
+                $projectName = Projects::findProject(['project_name'=>$project_Name,'project_type'=>strtoupper($post['project_type']),'project_property_type'=>strtoupper($post['proj_property_type'])]);               
                 if($projectName->count()===0) {
                     $process = 'create';
                     unset($projectName);
@@ -577,6 +576,116 @@ class UploadController extends ControllerBase
                 $start++;
             }
         }
+        if(!empty($errorLogs)&&count($errorLogs)>0) (new AdminLogs)->addLog($this->session->get('user')['username'], 'Insert Per Project', implode( "<br>", $errorLogs ));
+        return $inserted;
+    }
+
+
+    /**
+     * [addPerProject description]
+     * @param [type] $insert [description]
+     */ //echo '<pre>'; var_dump($insert); echo '</pre>'; die();    
+    private function addPerProject($insert) 
+    {
+#echo '<pre>'; var_dump($insert); echo '</pre>';     
+        $filter = new \Phalcon\Filter();
+        $esp = new Escaper();
+        $inserted=0;$totalinsert=count($insert); $start=1; $errorLogs=[];
+        if(!empty($insert)&&count($insert)>0) {
+            foreach ($insert as $count => $post) {  
+                $project_Name = (strpos($post['project_name'], "'") !== false) ? strtoupper(preg_replace("/'/", "", $post['project_name'])) : strtoupper($filter->sanitize($post['project_name'], "string" ));
+                $perProjParams = ['project_name'=>$project_Name,'project_type'=>strtoupper($post['project_type']),'project_property_type'=>strtoupper($post['proj_property_type']),'unit_type'=>$post['unit_type'],'area_sqft'=>$post['area_sqft']];
+                $projParams = ['project_name'=>$project_Name,'project_type'=>strtoupper($post['project_type']),'project_property_type'=>strtoupper($post['proj_property_type'])];
+                $projectName = Projects::findProject($projParams);               
+                if(!$projectName||$projectName->count()===0) {
+                    unset($projectName);
+                    continue;
+                } else {
+#echo '<pre>'; var_dump($projectName->toArray()); echo '</pre>'; die();                     
+                    $perProjParams['project_id'] = $projectName[0]->id;
+                    // unset($projectName);
+                    $perProjectInfo = PerProjects::findPerProject($perProjParams);
+                    if($perProjectInfo->count()===0) {
+                        $process = 'create';
+                        unset($perProjectInfo);
+                        $perProjectInfo = new PerProjects();
+                        $perProjectInfo->project_id = $projectName[0]->id;
+                        $perProjectInfo->project_name = $projectName[0]->project_name;
+                        $perProjectInfo->project_type = $projectName[0]->project_type;
+                        $perProjectInfo->proj_property_type = $projectName[0]->proj_property_type;
+                    } else {
+                        $process = 'update';
+                        // $perprojId = $perProjectInfo[0]->id;
+                        // unset($perProjectInfo);
+                        // $perProjectInfo = Projects::findFirst(["conditions"=>"id=?0","bind"=>[$perprojId]]);
+                    }
+
+                    foreach ($post as $field => $value) {
+                        $value = $filter->sanitize($value, "string");
+                        switch ($field) {
+                            case 'project_id':
+                            case 'project_name':
+                            case 'project_type':
+                            case 'proj_property_type':
+                            case 'low_price':
+                            case 'median_price':
+                            case 'high_price':
+                                continue;
+                                break;
+                            case 'area_sqft':
+                            case 'area_sqmt':
+                            case 'mtce_fee':
+                                if(!empty($value)) {
+                                    $perProjectInfo->$field = (float)$value;
+                                } else {
+                                    $perProjectInfo->$field = NULL;
+                                } 
+                                break;
+                            case 'no_of_units':
+                            case 'units_sold':
+                            case 'units_unsold':
+                            case 'share_value':
+                            case 'share_amount':
+                                if(!empty($value)) {
+                                    $perProjectInfo->$field = (int)$value;
+                                } else {
+                                    $perProjectInfo->$field = NULL;
+                                } 
+                                break;
+                            case 'unit_type':
+                            default:
+                                if(!empty($value)) {
+                                    $perProjectInfo->$field = trim($value);
+                                } else {
+                                    $perProjectInfo->$field = NULL;
+                                } 
+                                break;
+                        }
+                    }
+
+                    try {
+                        if($process=="create") {
+                            if($perProjectInfo->create()!==false) {
+                                $inserted++;
+                            } else {
+                                $errorLogs[] = "Error insert at row $start (project: ".$post['project_name'].") (project_type: ".$post['project_type'].") (proj_property_type: ".$post['proj_property_type'].") (message: Per Project Already Exist)";
+                            }
+                        } else {
+                            if($perProjectInfo->save()!==false) {
+                                $inserted++;
+                            } else {
+                                $errorLogs[] = "Error insert at row $start (project: ".$post['project_name'].") (project_type: ".$post['project_type'].") (proj_property_type: ".$post['proj_property_type'].") (message: Per Project Already Exist)";
+                            }
+                        }
+                    }  catch(\Exception $e) {
+                        $errorLogs[] = "Error insert at row $start (project: ".$post['project_name'].") (project_type: ".$post['project_type'].") (proj_property_type: ".$post['proj_property_type'].") (message: ".$e->getMessage().")";
+                    }
+                    $start++;
+
+                }
+            }
+        }
+        if(!empty($errorLogs)&&count($errorLogs)>0) (new AdminLogs)->addLog($this->session->get('user')['username'], 'Insert Per Project', implode( "<br>", $errorLogs ));
         return $inserted;
     }
 
@@ -766,134 +875,6 @@ class UploadController extends ControllerBase
         if(!empty($errorLogs)&&count($errorLogs)>0) (new AdminLogs)->addLog($this->session->get('user')['username'], 'Insert Project Details', implode( "<br>", $errorLogs ));
         return $inserted;
     }
-
-    /**
-     * [addPerProject description]
-     * @param [type] $insert [description]
-     */ //echo '<pre>'; var_dump($insert); echo '</pre>'; die();    
-    private function addPerProject($insert) 
-    {
-        $filter = new \Phalcon\Filter();
-        $esp = new Escaper();
-        $inserted=0;$totalinsert=count($insert);
-        if(!empty($insert)&&count($insert)>0) {
-            foreach ($insert as $count => $post) {  
-                $project_Name = (strpos($post['project_id'], "'") !== false) ? strtoupper(preg_replace("/'/", "", $post['project_id'])) : strtoupper($filter->sanitize($post['project_id'], "string" ));
-                $projectName = Projects::findFirst(["conditions"=>"UPPER(project_name)=?1","bind"=>[1=>$project_Name]]);                 
-                if(!$projectName) {
-                    continue;
-                } else {
-                    $param = ['project_id'=>$projectName->id,'unit_type'=>$post['unit_type'],
-                        'transaction_month'=>$post['transaction_month'],'date_avail_unit_updated'=>$post['date_avail_unit_updated'],
-                        'area_per_unit_type_sqm'=>$post['area_per_unit_type_sqm'],'area_per_unit_type_sqf'=>$post['area_per_unit_type_sqf']];
-                    $perProjects = PerProjects::findDetails($param);                
-                    if($perProjects->count()===0) {
-                        unset($perProjects);
-                        $perProjects = new PerProjects();
-                        $perProjects->project_id = (int)$projectName->id;
-                    } else {
-                        $ppid = $perProjects[0]->id;
-                        unset($perProjects);
-                        $perProjects = PerProjects::findFirst($ppid);
-                        $perProjects->project_id = (int)$projectName->id;
-                    }
- 
-                    foreach ($post as $field => $value) {
-                        $value = $filter->sanitize($value, "string");
-                        switch ($field) {
-                            case 'project_id':
-                                continue;
-                                break;
-                            case 'unit_type':
-                                //Unit Type ID
-                                $propUnitIds = [];
-                                $value = $esp->escapeHtml($value);
-                                if(!empty($value)) {
-                                    if (strpos($value, '|') !== false) {
-                                        $allUnits = explode("|", $value);
-                                        foreach ($allUnits as $key => $unit) {
-                                            $propertyUnits = PropertyUnits::findFirstByName(trim($unit));
-                                            if(!$propertyUnits) {
-                                                unset($propertyUnits);
-                                                $propertyUnits = new PropertyUnits();
-                                                $propertyUnits->name = $unit;
-                                                $propertyUnits->description = $unit;
-                                                if ($propertyUnits->save()) {
-                                                    $propUnitIds[] = $propertyUnits->name;
-                                                }
-                                            } else {
-                                                $propUnitIds[] = $propertyUnits->name;
-                                            }
-                                        }
-                                        $perProjects->field = implode(",",$propUnitIds);
-                                    } else {
-                                        $propertyUnits = PropertyUnits::findFirstByName(trim($value));
-                                        if(!$propertyUnits) {
-                                            unset($propertyUnits);
-                                            $propertyUnits = new PropertyUnits();
-                                            $propertyUnits->name = $value;
-                                            $propertyUnits->description = $value;
-                                            if ($propertyUnits->save()) {
-                                                $propUnitIds[] = $propertyUnits->name;
-                                            }
-                                        } else {
-                                            $propUnitIds[] = $propertyUnits->name;
-                                        }
-                                        $perProjects->field = implode(",",$propUnitIds);
-                                    }
-                                } else {
-                                    $perProjects->$field = NULL;
-                                } // ./Unit Type ID
-                                break;
-                            case 'median_psf':
-                            case 'low_psf':
-                            case 'high_psf':
-                                if(!empty($value)) {
-                                    $perProjects->$field = (float)$value;
-                                } else {
-                                    $perProjects->$field = NULL;
-                                } 
-                                break;
-                            case 'no_transactions':
-                            case 'no_unit_per_unit_type':
-                            case 'available_unit_type':
-                                if(!empty($value)) {
-                                    $perProjects->$field = (int)$value;
-                                } else {
-                                    $perProjects->$field = NULL;
-                                } 
-                                break;
-                            case 'date_avail_unit_updated':
-                                if(!empty($value)) {
-                                    $date = \DateTime::createFromFormat('j-M-y', $value);
-                                    $perProjects->$field = $date->format('Y-m-d');
-                                } else {
-                                    $perProjects->$field = NULL;
-                                } 
-                                break;
-                            default:
-                                if(!empty($value)) {
-                                    $perProjects->$field = $esp->escapeHtml($value);
-                                } else {
-                                    $perProjects->$field = NULL;
-                                } 
-                                break;
-                        }
-                    }
-                    try {
-                        $perProjects->save();
-                        $inserted++;
-                    }  catch(\Exception $e) {
-                        error_log("error: $start ".$perProjects->id . " ".$post['project_id']);
-                        error_log("Error: ".$e->getMessage());
-                        exit;
-                    }
-                }
-            }
-        }
-        return $inserted;
-    }
-
 
     /**
      * [addNewProject description]

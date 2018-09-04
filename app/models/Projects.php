@@ -251,6 +251,20 @@ class Projects extends \Phalcon\Mvc\Model
     }
 
     /**
+     * [findTopYear description]
+     * @param  [type] $param [description]
+     * @return [type]        [description]
+     */
+    public static function findTopYear()
+    {
+        $sql = "SELECT DISTINCT MIN(top_year) top_min, MAX(top_year) top_max
+            FROM ".(new self)->getSource()." WHERE top_year REGEXP '^[0-9]+$' ORDER BY top_year ASC";
+        $result = new self();
+        $conn = $result->getReadConnection();
+        return new Resultset(null, $result, $conn->query($sql, $param));        
+    } 
+
+    /**
      * [findProject description]
      * @param  [type] $param [description]
      * @return [type]        [description]
@@ -333,25 +347,38 @@ class Projects extends \Phalcon\Mvc\Model
             LEFT JOIN ".(new PropertyTenures)->getSource()." ptn ON ptn.name=proj.tenure \n
             LEFT JOIN ".(new PropertyDistricts)->getSource()." dt ON dt.name=proj.district \n
             LEFT JOIN ".(new PropertyStatus)->getSource()." ps ON ps.name=proj.status \n
-            LEFT JOIN ".(new PropertyStatus)->getSource()." ps2 ON ps2.name=proj.status2 \n
-            LEFT JOIN ".(new PropertyUnits)->getSource()." b \n
-                ON (CASE WHEN proj.unit_type IS NOT NULL THEN FIND_IN_SET(b.name, proj.unit_type) ELSE proj.unit_type = b.name END) \n
-            LEFT JOIN ".(new PropertyUnits)->getSource()." c \n
-                ON (CASE WHEN proj.available_unit_type IS NOT NULL THEN FIND_IN_SET(c.name, proj.available_unit_type) ELSE proj.available_unit_type = c.name END) \n
-            LEFT JOIN ".(new PropertyAgencies)->getSource()." ta \n
-                ON (CASE WHEN proj.tender_agency IS NOT NULL THEN FIND_IN_SET(ta.name, proj.tender_agency) ELSE proj.tender_agency = ta.name END) \n
-            LEFT JOIN ".(new PropertyAgencies)->getSource()." ma \n
-                ON (CASE WHEN proj.marketing_agency IS NOT NULL THEN FIND_IN_SET(ma.name, proj.marketing_agency) ELSE proj.marketing_agency = ma.name END) \n";
+            LEFT JOIN ".(new PropertyStatus)->getSource()." ps2 ON ps2.name=proj.status2 \n";
+            // LEFT JOIN ".(new PropertyUnits)->getSource()." b \n
+            //     ON (CASE WHEN proj.unit_type IS NOT NULL THEN FIND_IN_SET(b.name, proj.unit_type) ELSE proj.unit_type = b.name END) \n
+            // LEFT JOIN ".(new PropertyUnits)->getSource()." c \n
+            //     ON (CASE WHEN proj.available_unit_type IS NOT NULL THEN FIND_IN_SET(c.name, proj.available_unit_type) ELSE proj.available_unit_type = c.name END) \n
+            // LEFT JOIN ".(new PropertyAgencies)->getSource()." ta \n
+            //     ON (CASE WHEN proj.tender_agency IS NOT NULL THEN FIND_IN_SET(ta.name, proj.tender_agency) ELSE proj.tender_agency = ta.name END) \n
+            // LEFT JOIN ".(new PropertyAgencies)->getSource()." ma \n
+            //     ON (CASE WHEN proj.marketing_agency IS NOT NULL THEN FIND_IN_SET(ma.name, proj.marketing_agency) ELSE proj.marketing_agency = ma.name END) \n";
         $sql .= " GROUP BY proj.id) proj \n";
         if(!empty($param['conditions'])&&count($param['conditions'])>0) {
             $sql .= "WHERE ";$idx = 0; $binds=[];
             foreach($param['conditions'] as $field => $value) {
                 $sql .= ($idx > 0) ? "AND " : "";
-                if(is_array($value)&&$value['concat_reg']) {
+                if(is_array($value)&&!empty($value['concat_reg'])) {
                     $sql .= $value['function']." ";
                 } else {
-                    $binds[$field] = $value;
-                    $sql .= "proj.".$field ." = :".$field." ";
+                    switch ($field) {
+                        case 'project_type':
+                        case 'proj_property_type':
+                            $binds[$field] = $value;
+                            $sql .= "proj.".$field ." IN ({".$field.":array}) ";
+                            break;
+                        case 'project_name':
+                            $binds[$field] = '%' . $value .'%';
+                            $sql .= "proj.".$field ." LIKE :".$field." ";
+                            break;
+                        default:
+                            $binds[$field] = $value;
+                            $sql .= "proj.".$field ." = :".$field." ";
+                            break;
+                    }
                 }
                 $idx++;
             }
@@ -367,6 +394,10 @@ class Projects extends \Phalcon\Mvc\Model
             }
         }
         $sql .=";";
+#return $sql;
+#
+// echo '<pre>'; var_dump($sql); echo '</pre>'; 
+// echo '<pre>'; var_dump($binds); echo '</pre>'; die();      
         $conn = $result->getReadConnection();
         $conn->query($sql, $binds);
         $count_sql = "SELECT FOUND_ROWS() AS cnt";        

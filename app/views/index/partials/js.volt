@@ -2,13 +2,32 @@
 $('.select2').select2({theme: "bootstrap", width: "100%"});	
 
 $("#mrt").select2({	placeholder:'MRT/LRT', theme: "bootstrap", width: "100%"});
-$("#districts").select2({ placeholder:'District', theme: "bootstrap", width: "100%"});
+//$("#district").select2({ placeholder:'District', theme: "bootstrap", width: "100%"});
 $("#unit_type").select2({ placeholder:'- Select Unit Type -', theme: "bootstrap", width: "100%"});
 $("#project_property_type").select2({ placeholder:'- Select Project Property Type -', theme: "bootstrap", width: "100%"});
 
+$(function() {
+    $("select").each(function(i){
+    	if($(this).attr('name')=='mrt_distance_km') {
+    		$('#'+$(this).attr('id')).select2({theme: "bootstrap", width: "100%", placeholder: '- '+$(this).attr('placeholder')+' -', 'allowClear': false, 'tags': true });
+    	} else {
+        	$('#'+$(this).attr('id')).select2({theme: "bootstrap", width: "100%", placeholder: '- '+$(this).attr('placeholder')+' -', 'allowClear': false});
+        }
+    });
+});
 
 $(document).ready(function(){
 	'use strict';
+
+    $("div.DTFC_LeftBodyLiner table thead tr th").removeClass("sorting");
+
+    // $('input[name="property_type"]').click(function() {  
+    //     var sd = $(this).attr('placeholder');  
+    //     $('label[for^=sd]').fadeIn();  
+    // }); 
+    // 
+    //var mySlider = $("input.slider").slider();
+    $("input[name=total_units]").slider({});
 
     $('#table').DataTable({
         "processing": true,
@@ -44,42 +63,68 @@ $(document).ready(function(){
         $("select.select2").select2('data', {});
         $("select.select2").select2({theme: "bootstrap", width: "100%"});
 		$("#mrt").select2({	placeholder:'MRT/LRT', theme: "bootstrap", width: "100%"});
-		$("#districts").select2({ placeholder:'District', theme: "bootstrap", width: "100%"});
+		$("#district").select2({ placeholder:'District', theme: "bootstrap", width: "100%"});
 		$("#unit_type").select2({ placeholder:'- Select Unit Type -', theme: "bootstrap", width: "100%"});
 		$("#project_property_type").select2({ placeholder:'- Select Project Property Type -', theme: "bootstrap", width: "100%"});
     });
 
-    //Project Property Types
-    var pprop_options = JSON.parse($("#prop_type_fieldoptions").val());
-    var selProjType = $("#project_type option[selected]" ).val();   
-    if(selProjType!==undefined) {
-		$('#project_property_type').empty();
-		$('#project_property_type').prepend('<option></option>');
-	    $('#project_property_type').select2(
-	    	{ 	
-	    		theme: "bootstrap",
-	    		allowClear: true,
-	    		data: pprop_options[selProjType],
-	    		placeholder:'- Select Project Property Type -',
-	    		width:'100%',
-	    	}
-	    );
-    }
-	$('#project_type').on('change', function() {
-    	if($(this).val()!=undefined) {
-    		$('#project_property_type').empty();
-    		$('#project_property_type').prepend('<option></option>');
-		    $('#project_property_type').select2(
-		    	{ 	
-		    		theme: "bootstrap",
-		    		allowClear: true,
-		    		data: pprop_options[$(this).val()],
-		    		placeholder:'- Select Project Property Type -',
-		    		width:'100%',
-		    	}
-		    );
-        }
-    });
+ 	$('#district').on('change', function() {
+ 		var selectpa = $('#planning_area');
+ 		selectpa.find('option').remove();
+ 		var selectps = $('#primary_school_within_1km');
+ 		selectps.find('option').remove();
+ 		if($(this).val()!=undefined) {
+			$.ajax({
+				url: "../index/getplanningarea",
+                type: "GET",
+                data: { "district": $(this).val() },
+                beforeSend: function (data) {},
+                success:function(data){
+                	if(data!=undefined) {
+	                	$.each(data,function(key, value) {
+					    	selectpa.append('<option value="' + key + '">' + value + '</option>');
+						});
+	                }
+                }
+            });
+            $.ajax({
+				url: "../index/getprimaryschool",
+                type: "GET",
+                data: { "district": $(this).val() },
+                beforeSend: function (data) {},
+                success:function(data){
+                	if(data!=undefined) {
+	                	$.each(data,function(key, value) {
+					    	selectps.append('<option value="' + key + '">' + value + '</option>');
+						});
+	                }
+                }
+            });
+ 		}
+ 	});
+
+
+
+
+ 	/*$('#mrt').on('change', function() {
+ 		var select = $('#mrt_distance_km');
+ 		select.find('option').remove();
+ 		if($(this).val()!=undefined) {
+			$.ajax({
+				url: "../index/getmrtdistance",
+                type: "GET",
+                data: { "mrts": $(this).val() },
+                beforeSend: function (data) {},
+                success:function(data){
+                	if(data!=undefined) {
+	                	$.each(data,function(key, value) {
+					    	select.append('<option value=' + key + '>' + value + '</option>');
+						});
+	                }
+                }
+            });
+ 		}
+ 	});*/
 
 	function resetDisable() {
 		$('input, select').each(
@@ -90,18 +135,18 @@ $(document).ready(function(){
 		$("#status, #transaction").prop("checked", false);
 	}
     var selvalue = $("#project_type").find('option:selected').val();
-		if (selvalue==3) { //Resale
-			resetDisable();
-			$("#unit_type").css('pointer-events', 'none');
-			$("#unit_type, #mrt, #primary_school, #total_units, #status").prop('disabled','disabled');
-		} else if (selvalue==4||selvalue==2) { //GLS
-			resetDisable();
-			$("#unit_type").css('pointer-events', 'auto');
-			$("#planning_region, #unit_type, #min_budget, #max_budget, #min_area, #max_area, #tenure, #top, #mrt, #primary_school, #total_units, #transaction").prop('disabled','disabled');
-		} else { //New Sale
-			resetDisable();
-			$("#status").prop('disabled','disabled');
-		}
+	if (selvalue==3) { //Resale
+		resetDisable();
+		$("#unit_type").css('pointer-events', 'none');
+		$("#unit_type, #mrt, #primary_school, #total_units, #status").prop('disabled','disabled');
+	} else if (selvalue==4||selvalue==2) { //GLS
+		resetDisable();
+		$("#unit_type").css('pointer-events', 'auto');
+		$("#planning_region, #unit_type, #min_budget, #max_budget, #min_area, #max_area, #tenure, #top, #mrt, #primary_school, #total_units, #transaction").prop('disabled','disabled');
+	} else { //New Sale
+		resetDisable();
+		$("#status").prop('disabled','disabled');
+	}
     $(document).on('change', '#project_type', function (e) {
     	var value = $(this).val();
 		if (value==3) { //Resale
@@ -117,7 +162,5 @@ $(document).ready(function(){
 			$("#status").prop('disabled','disabled');
 		}
     });
-
-
 });
 </script>

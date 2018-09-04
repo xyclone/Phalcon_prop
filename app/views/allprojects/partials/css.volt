@@ -71,7 +71,8 @@
       margin: 0 auto;
     }    */
 
-
+    .select2-selection__choice__remove{display:none !important;}
+    
     @media screen {
       #printSection {
           display: none;

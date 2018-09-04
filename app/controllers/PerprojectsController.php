@@ -9,6 +9,7 @@ use Phalcon\Mvc\Model\Resultset;
 use Phalcon\Mvc\View;
 use Phalcon\Image\Adapter\Imagick;
 use Property\Helpers\Helpers;
+use Property\Library\DataTable;
 
 use Property\Classes\PropertyClass;
 //Models
@@ -28,60 +29,129 @@ class PerprojectsController extends ControllerBase
      */ //echo '<pre>'; var_dump($this->view->uploads); echo '</pre>'; die();
     public function indexAction()
     {
-        $this->view->perprojects = PerProjects::find(["order" => "id ASC"]);    
-        $this->view->pick("perprojects/index");
+        $columns = PerProjects::getFields();
+        foreach(array_values($columns) as $col) $NameCols[] = $col;
+        $DataCols = array_keys($columns);       
+        foreach ($DataCols as $val) $dtCols[] = ["data"=>$val,'name'=>$val];
+        $hidden = ['id','project_id','creation_date', 'update_date','update_by']; 
+        foreach ($DataCols as $key => $val) {
+            if (!in_array($val, $hidden)) continue;
+            else $hiddenfields[$key] = $val;
+        }
+        $this->view->hiddenCols = implode(',',array_keys($hiddenfields));
+        $this->view->NameCols = $NameCols;
+        $this->view->DataCols = $DataCols;
+        $this->view->JsonCols = json_encode($dtCols);
+        $this->view->JsonUrl = "perprojects/listJson";
+    }
+
+    /**
+     * [listJsonAction description]
+     * @return [type] [description]
+     */ //echo '<pre>'; var_dump($this->view->uploads); echo '</pre>'; die();
+    public function listJsonAction()
+    {
+        $this->view->disable();
+        if ($this->request->isPost()) $data = $this->request->getPost();
+        $perprojcolumns = PerProjects::getFields();
+        $cols = array_keys($perprojcolumns);    
+        $model = new PerProjects();
+        foreach ($cols as $key => $value) {
+            $columns[$value] = [
+                    'dbc'       => $value,
+                    'dtc'       => $value,
+                    'search'    => true,
+                    'extendIn'  => false,
+                ];
+            switch ($value) {
+                default:
+                    $columns[$value]['foreign'] = null;
+                    $columns[$value]['fldtype'] = null;
+                    $columns[$value]['custom'] = null;
+                    break;
+            }
+        }
+        $sql = "";
+        $condition = $sql;
+        echo DataTable::generateTableV2($data, $columns, $model, $condition);  
     }
 
     /**
      * [detailsAction description]
      * @param  [type] $id [description]
      * @return [type]     [description]
-     */
+     */ //echo '<pre>'; var_dump($this->view->uploads); echo '</pre>'; die();
     public function detailsAction($id)
     {
         $this->view->disable();
-        $fields = PropertyClass::$project_per_project;
+        $dfields = PropertyClass::$project_per_project_fields;
         $perproject = PerProjects::findFirst($id);
         $response = '<div role="form" class="row">';
-        $numOfCols = 2;
-        $rowCount = 0;
-        $bootstrapColWidth = 12 / $numOfCols;
-        $i=1; $max = count($fields);
-        foreach ($fields as $key => $field) {
-            $response .= '<div class="col-sm-'.$bootstrapColWidth.'">';
+        $response .= '<form method="POST" action="details/savePerunit" id="postdetails" data-remote="data-remote" >';
+        foreach ($dfields as $fldname => $label) {
+            $response .= '<input type="hidden" id="id" name="id" readonly value="'.$perproject->id.'">';
+            $response .= '<div class="container m-b-xs">';
                 $response .= '<div class="form-group">';
-                    $response .= '<label for="'.$field.'" class="control-label col-xs-12"></label>';
-                        $response .= '<div class="col-xs-12">';
-                            $response .= '<div class="input-group"><span class="input-group-addon"><b>'.$this->str_truncate($field, 20).'</b></span>';
-                                switch($key) {
-                                    case 'project_id':
-                                        $project_name = (!empty($perproject->$key)) ? $perproject->PerProjects_Project->project_name : ''; 
-                                        $response .= '<input type="text" id="'.$field.'" name="'.$field.'" class="form-control text-right text-strong" readonly value="'.$project_name.'">';
-                                        break;
-                                    case 'unit_type_id':
-                                    case 'available_unit_type_id':
-                                        $property_unit = (!empty($perproject->$key)) ? $perproject->PerProjects_PropertyUnits->name : ''; 
-                                        $response .= '<input type="text" id="'.$field.'" name="'.$field.'" class="form-control text-right text-strong" readonly value="'.$property_unit.'">';
-                                        break; 
-                                    case 'date_avail_unit_updated':
-                                        $date_value = (!empty($perproject->$key)) ? date("d-M-Y", strtotime($perproject->$key)) : ''; 
-                                        $response .= '<input type="text" id="'.$field.'" name="'.$field.'" class="form-control text-right text-strong" readonly value="'.$date_value.'">';
-                                        break;   
-                                    default:
-                                        $project_value = (!empty($perproject->$key)) ? $perproject->$key : ''; 
-                                        $response .= '<input type="text" id="'.$field.'" name="'.$field.'" class="form-control text-right text-strong" readonly value="'.$project_value.'">';
-                                        break;
-                                }
-                            $response .= '</div>';
-                        $response .= '</div>';
+                    $response .= '<div class="col-xs-3"><label for="'.$fldname.'" class="control-label" style="padding-top: 10px;">'.$label.'</label></div>';
+                        //foreach ($fields as $fldname) {
+                            switch($fldname) {
+                                case 'project_type':
+                                case 'proj_property_type':
+                                case 'project_id':
+                                case 'project_name':
+                                case 'low_price':
+                                case 'median_price':
+                                case 'high_price':
+                                    $response .= '<div class="col-xs-3">';
+                                    $project_value = (!empty($perproject->$fldname)) ? $perproject->$fldname : ''; 
+                                    $response .= '<input type="text" id="'.$fldname.'" name="'.$fldname.'" class="form-control text-strong" value="'.$project_value.'" placeholder="'.ucwords(str_replace('_',' ',$fldname)).'" readonly>';
+                                    $response .= '</div>';
+                                    break;
+                                case 'no_of_units':
+                                case 'units_sold':
+                                case 'units_unsold':
+                                case 'share_value':
+                                case 'share_amount':
+                                case 'mtce_fee':
+                                default:
+                                    $response .= '<div class="col-xs-3">';
+                                    $project_value = (!empty($perproject->$fldname)) ? $perproject->$fldname : ''; 
+                                    $response .= '<input type="text" id="'.$fldname.'" name="'.$fldname.'" class="form-control text-strong" value="'.$project_value.'" placeholder="'.ucwords(str_replace('_',' ',$fldname)).'">';
+                                    $response .= '</div>';
+                                    break;
+                            }
+                        //}
                 $response .= '</div>';
             $response .= '</div>';
-            $rowCount++;
-            if($rowCount % $numOfCols == 0) $response .= '</div><div class="row">';
-        }     
+        }  
+        $response .= '</form>';   
         $response .= '</div>';
-
         return $response;
     }
 
+    /**
+     * [deletedAction description]
+     * @return [type] [description]
+     */
+    public function deletedAction()
+    {
+        $this->view->disable();
+        $data = $this->request->getPost();
+        $id = (int)$data['id'];
+        $projects = PerProjects::findFirst($id);
+        if($projects&&count($projects)>0) {
+            $result = PerProjects::deletePerProject($id);
+            if($result) {
+                $result = Helpers::notify('success', 'Per Project detail successfully deleted.');
+                $result['id'] = $id;
+                $result['close'] = 2;
+            } else {
+                $result = Helpers::notify('error', 'Unable to delete per project details.');
+            }
+        } else {
+            $result = Helpers::notify('error', 'Unable to find per project detail.');
+        }
+        return json_encode($result);
+
+    }
 }

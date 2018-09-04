@@ -59,7 +59,6 @@
                 <h4 class="modal-title">Change Username</h4>
             </div>
             <div class="modal-body">
-
                 <p>Some text in the modal.</p>
             </div>
             <div class="modal-footer">
