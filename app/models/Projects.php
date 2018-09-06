@@ -184,6 +184,7 @@ class Projects extends \Phalcon\Mvc\Model
         $this->issue_date  = (!empty($this->issue_date)&&strtotime($this->issue_date)>=0) ? date("d-M-Y", strtotime($this->issue_date)) : "";
         $this->ds_date  = (!empty($this->ds_date)&&strtotime($this->ds_date)>=0) ? date("d-M-Y", strtotime($this->ds_date)) : "";
         $this->vacant_possession_date  = (!empty($this->vacant_possession_date)&&strtotime($this->vacant_possession_date)>=0) ? date("d-M-Y", strtotime($this->vacant_possession_date)) : "";
+        $this->transaction_month  = (!empty($this->transaction_month)&&strtotime($this->transaction_month)>=0) ? date("d-M-Y", strtotime($this->transaction_month)) : "";
         $this->date_updated  = (!empty($this->date_updated)&&strtotime($this->date_updated)>=0) ? date("d-M-Y", strtotime($this->date_updated)) : "";
         $this->available_date  = (!empty($this->available_date)&&strtotime($this->available_date)>=0) ? date("d-M-Y", strtotime($this->available_date)) : "";
         $this->completion_date  = (!empty($this->completion_date)&&strtotime($this->completion_date)>=0) ? date("d-M-Y", strtotime($this->completion_date)) : "";

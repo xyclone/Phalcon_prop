@@ -170,6 +170,14 @@ class AllprojectsController extends ControllerBase
             $ds_min = date("Y-m-d", strtotime($ds[0]));
             $ds_max = date("Y-m-d", strtotime($ds[1])); 
         }
+        //Transaction Month
+        $transaction_month = (!empty($data['transaction_month'])) ?  $data['transaction_month'] : '';
+        $transaction_min = ""; $transaction_max = "";
+        if(!empty($transaction_month)) {
+            $transaction = explode(" - ", $transaction_month);
+            $transaction_min = date("Y-m-d", strtotime($transaction[0]));
+            $transaction_max = date("Y-m-d", strtotime($transaction[1])); 
+        }
         //Update Date
         $date_updated = (!empty($data['date_updated'])) ?  $data['date_updated'] : '';
         $updated_min = ""; $updated_max = "";
@@ -246,6 +254,11 @@ class AllprojectsController extends ControllerBase
                     break;
                 case 'ds_date':
                     $columns[$value]['custom'] = ['start'=>$ds_min,'stop'=>$ds_max];
+                    $columns[$value]['fldtype'] = 'date';
+                    $columns[$value]['foreign'] = null;
+                    break;
+                case 'transaction_month':
+                    $columns[$value]['custom'] = ['start'=>$transaction_min,'stop'=>$transaction_max];
                     $columns[$value]['fldtype'] = 'date';
                     $columns[$value]['foreign'] = null;
                     break;

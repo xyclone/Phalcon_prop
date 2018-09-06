@@ -80,6 +80,9 @@
                 case "DS Date":
                     $(this).html('<div class="input-group"><input name="ds_date" id="ds_date" type="text" placeholder="'+title+' Range" class="input-sm searchfield-sm" /><span class="input-group-btn"><button type="button" class="btn btn-sm btn-default clear-text"><i class="fa fa-times-circle fa-fw" aria-hidden="true"></i></button></span></div>');
                     break;
+                case "Transaction Month":
+                    $(this).html('<div class="input-group"><input name="transaction_month" id="transaction_month" type="text" placeholder="'+title+' Range" class="input-sm searchfield-sm" /><span class="input-group-btn"><button type="button" class="btn btn-sm btn-default clear-text"><i class="fa fa-times-circle fa-fw" aria-hidden="true"></i></button></span></div>');
+                    break;
                 case "Date Spreadsheet Updated":
                     $(this).html('<div class="input-group"><input name="date_updated" id="date_updated" type="text" placeholder="'+title+' Range" class="input-sm searchfield-sm" /><span class="input-group-btn"><button type="button" class="btn btn-sm btn-default clear-text"><i class="fa fa-times-circle fa-fw" aria-hidden="true"></i></button></span></div>');
                     break;
@@ -128,6 +131,7 @@
                     d.approved_date = $('#approved_date').val();
                     d.issue_date = $('#issue_date').val();
                     d.ds_date = $('#ds_date').val();
+                    d.transaction_month = $('#transaction_month').val();
                     d.date_updated = $('#date_updated').val();
                 },
                 "error": handleAjaxError,
@@ -218,7 +222,7 @@
 
         //Create DateRangePicker
         $("#available_date, #available_unit_date, #status_date, #status2_date, #gls_sold_date, #stb_application_date, #stb_approval_date, #completion_date, #vacant_possession_date, #approved_date, #issue_date, #ds_date, #date_updated").keypress(function(event) {event.preventDefault();});
-        $('#available_date, #available_unit_date, #status_date, #status2_date, #gls_sold_date, #stb_application_date, #stb_approval_date, #completion_date, #vacant_possession_date, #approved_date, #issue_date, #ds_date, #date_updated').daterangepicker({
+        $('#available_date, #available_unit_date, #status_date, #status2_date, #gls_sold_date, #stb_application_date, #stb_approval_date, #completion_date, #vacant_possession_date, #approved_date, #issue_date, #ds_date, #transaction_month, #date_updated').daterangepicker({
             timePicker: false,
             showDropdowns: true,
             autoUpdateInput: false,
@@ -281,6 +285,10 @@
         $('input[name="ds_date"]').on('apply.daterangepicker', function(ev, picker) {
             var selected = new Date(picker.startDate.format('YYYY-MM-DD')) + ' - ' + new Date(picker.endDate.format('YYYY-MM-DD'));
             oTable.columns(88).search(selected).draw();   
+        });
+        $('input[name="transaction_month"]').on('apply.daterangepicker', function(ev, picker) {
+            var selected = new Date(picker.startDate.format('YYYY-MM-DD')) + ' - ' + new Date(picker.endDate.format('YYYY-MM-DD'));
+            oTable.columns(49).search(selected).draw();   
         });
         $('input[name="date_updated"]').on('apply.daterangepicker', function(ev, picker) {
             var selected = new Date(picker.startDate.format('YYYY-MM-DD')) + ' - ' + new Date(picker.endDate.format('YYYY-MM-DD'));
