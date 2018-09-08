@@ -45,8 +45,6 @@ class IndexController extends ControllerBase
         $this->view->link_action = 'index/process';
         $this->view->form_name = 'search_form';
         $this->view->pick("index/index");
-//         $projects = Projects::find(["conditions"=>"project_name LIKE :project_name:","bind"=>["project_name"=>"%affinity%"]]);
-// echo '<pre>'; var_dump($projects->toArray()); echo '</pre>'; die();  
     }
 
     /**
@@ -115,6 +113,10 @@ class IndexController extends ControllerBase
         $this->view->projects = ($projects&&$projects->count()>0) ? $projects->toArray() : [];
     }
 
+    /**
+     * [processAction description]
+     * @return [type] [description]
+     */
     public function processAction()
     {
         if (!$this->request->isPost())  return $this->redirectBack();
@@ -171,6 +173,8 @@ class IndexController extends ControllerBase
         if(!empty($data['total_units'])) {
             $binds['total_units'] = $data['total_units'];
         }
+        //PerProject
+        
 
         $DataCols = array_keys(PropertyClass::$project_fields);
         foreach ($DataCols as $val) $dtCols[] = ["data"=>$val,'name'=>$val];
@@ -183,74 +187,105 @@ class IndexController extends ControllerBase
         }
 
 
-        $idx=0; $conditions="";
+        $idx=0; $conditions=""; $skipMaxBudget = false; $skipMaxArea = false;
         foreach ($data as $field => $value) {
             if(!empty($value)) {
-                $conditions .= ($idx > 0&&$field!=="unit_type_condition") ? " AND " : "";
-                if($field=="unit_type"&&!empty($data['unit_type_condition'])) {
-                    $conditions .= $field ." ". $data['unit_type_condition']." ";
-                } else {
-                    
-                    switch ($field) {
-                        case 'project_type':
-                        case 'proj_property_type':
-                        case 'district':
-                        case 'planning_area':
-                        case 'property_type':
-                        case 'tenure':
-                        case 'mrt':
-                            $conditions .= $field ." IN ({".$field.":array}) ";
-                            break;
-                        case 'project_name':
-                        case 'unit_type':
-                        case 'primary_school_within_1km':
-                        case 'street_name':
-                            $conditions .= $field ." LIKE :".$field.": ";
-                            break;
-                        case 'total_units':
-                        case 'top_year':
-                            $tu = explode("-",$data[$field]);
-                            $start = $tu[0]; $stop = $tu[1];
+                                
+                switch ($field) {
+                    case 'project_type':
+                    case 'proj_property_type':
+                    case 'district':
+                    case 'planning_area':
+                    case 'property_type':
+                    case 'tenure':
+                    case 'mrt':
+                        $conditions .= ($idx>0) ? " AND " : "";   
+                        $conditions .= $field ." IN ('".implode("','", $binds[$field])."') ";
+                        unset($binds[$field]);
+                        break;
+                    case 'project_name':
+                    case 'unit_type':
+                    case 'primary_school_within_1km':
+                    case 'street_name':
+                        $conditions .= ($idx>0) ? " AND " : "";   
+                        $conditions .= $field ." LIKE :".$field." ";
+                        break;
+                    case 'total_units':
+                    case 'top_year':
+                        $conditions .= ($idx>0) ? " AND " : "";   
+                        $tu = explode("-",$data[$field]);
+                        $start = $tu[0]; $stop = $tu[1];
+                        $conditions .= $field ." BETWEEN ".$start." AND ".$stop." ";
+                        unset($binds[$field]);
+                        break;
+                    case 'mrt_distance_km':
+                        $conditions .= ($idx>0) ? " AND " : "";   
+                        if(strpos($data[$field], "-")) {
+                            $km = explode("-",$data[$field]);
+                            $start = $km[0]/1000; $stop = $km[1]/1000;
                             $conditions .= $field ." BETWEEN ".$start." AND ".$stop." ";
-                            unset($binds[$field]);
-                            break;
-                        case 'mrt_distance_km':
-                            if(strpos($data[$field], "-")) {
-                                $km = explode("-",$data[$field]);
-                                $start = $km[0]/1000; $stop = $km[1]/1000;
-                                $conditions .= $field ." BETWEEN ".$start." AND ".$stop." ";
+                        } else {
+                            $value = $value/1000;
+                            $conditions .= $field ." <= ".$value." ";
+                        }
+                        break;
+                    case 'min_budget':
+                        if(!empty($data['min_budget'])) {
+                            $conditions .= ($idx>0) ? " AND " : "";  
+                            if(!empty($data['max_budget'])) {
+                                $skipMaxBudget = true;
+                                $conditions .= " ((".(int)$data['max_budget']." < `low_price`) OR \n";
+                                $conditions .= " (".(int)$data['min_budget']." > `low_price`) AND (".(int)$data['min_budget']." > `high_price`)) \n";
                             } else {
-                                $value = $value/1000;
-                                $conditions .= $field ." <= ".$value." ";
+                                $conditions .= " ".(int)$data['min_budget']." BETWEEN `low_price` AND `high_price` \n";
                             }
-                            break;
-                        default:
-                            $conditions .= $field ." = :".$field.": ";
-                            break;
-                    }
+                        }
+                        unset($binds[$field]);
+                        break;
+                    case 'max_budget':
+                        if(!empty($data['max_budget'])&&$skipMaxBudget!=true) {
+                            $conditions .= ($idx>0) ? " AND " : "";
+                            $conditions .= " ".(int)$data['max_budget']." BETWEEN `low_price` AND `high_price` \n";
+                        }
+                        unset($binds[$field]);
+                        break;
+                    case 'min_area':
+                        if(!empty($data['min_area'])) {
+                            $conditions .= ($idx>0) ? " AND " : "";
+                            if(!empty($data['max_area'])) {
+                                $skipMaxArea = true;
+                                $conditions .= "`area_sqft` BETWEEN ".(int)$data['min_area']." AND ".(int)$data['max_area']." \n";
+                                unset($binds['max_area']);
+                            } else {
+                                $conditions .= "`area_sqft` > ".(int)$data['min_area']." \n";
+                            }
+                        }
+                        unset($binds[$field]);
+                        break;
+                    case 'max_area':
+                        if(!empty($data['max_area'])&&$skipMaxArea!=true) {
+                            $conditions .= ($idx>0) ? " AND " : "";
+                            $conditions .= "`area_sqft` < ".(int)$data['max_area']." \n";
+                        }
+                        unset($binds[$field]);
+                        break;
+                    default:
+                        $conditions .= ($idx>0) ? " AND " : "";   
+                        $conditions .= $field ." = :".$field." ";
+                        break;
                 }
             }
             $idx++;
         }
-// echo '<pre>'; var_dump($binds); echo '</pre>'; 
-// echo '<pre>'; var_dump($conditions); echo '</pre>'; die();      
         $hiddenfields = array_diff($DataCols, $visCols);   
         $this->view->visCols = $NameCols;
-#echo '<pre>'; var_dump($this->view->visCols); echo '</pre>'; die(); 
         $this->view->hiddenCols = implode(',',array_keys($hiddenfields));
         $this->view->NameCols = array_values(PropertyClass::$project_fields);
         $this->view->DataCols = array_keys(PropertyClass::$project_fields);
         $this->view->JsonCols = json_encode($dtCols);
-// echo '<pre>'; var_dump($this->view->NameCols); echo '</pre>'; 
-// echo '<pre>'; var_dump($this->view->DataCols); echo '</pre>'; 
-// echo '<pre>'; var_dump(implode(",",$visCols)); echo '</pre>'; die();             
-// echo '<pre>'; var_dump($conditions); echo '</pre>'; 
-// echo '<pre>'; var_dump($binds); echo '</pre>'; die();            
-        //$projects = Projects::findAll(["type"=>"rows","conditions"=>$binds,"order" => "proj.id ASC"]);
-        $projects = Projects::find(["columns"=>implode(",",$visCols),"conditions"=>$conditions,"bind"=>$binds,"order"=>"id ASC"]);
-        //$projects = Projects::find(["conditions"=>"project_type IN ({project_type:array}) AND proj_property_type IN ({proj_property_type:array}) AND project_name LIKE :project_name: ","bind"=>['project_type'=>$binds['project_type'],'proj_property_type'=>$binds['proj_property_type'],'project_name'=>'%affinity%']]);
-// echo '<pre>'; var_dump($projects->toArray()); echo '</pre>';       
-// echo '<pre>'; var_dump($projects); echo '</pre>'; die();         
+        //$projects = Projects::find(["columns"=>implode(",",$visCols),"conditions"=>$conditions,"bind"=>$binds,"order"=>"id ASC"]);
+        $projects = Projects::findAll(["type"=>"rows","conditions"=>$conditions,"bind"=>$binds,"order"=>"id ASC"]);
+#echo '<pre>'; var_dump($projects); echo '</pre>'; die();     
         $this->view->projects = ($projects&&$projects->count()>0) ? $projects->toArray() : [];
     }
     

@@ -67,14 +67,33 @@
             }
         }); // ./Replace thead filterRow to textfield search
         var oTable = $('#dt_table').DataTable({
+            // "processing": true,
+            // "serverSide": true,
+            // "orderCellsTop": true,
+            // "scrollCollapse": true,
+            // "scrollY": "62vh",
+            // "responsive": false,
+            // "autoWidth": true,
+            // "scrollX": true,
+            // "scrollCollapse": true,
+            // "autoWidth": false,
+            // "lengthChange": true,
+            // "fixedColumns": {
+            //     "leftColumns": 1
+            // },
             "processing": true,
             "serverSide": true,
             "orderCellsTop": true,
             "scrollCollapse": true,
             "scrollY": "62vh",
             "responsive": false,
-            "autoWidth": true,
             "scrollX": true,
+            "scrollCollapse": true,
+            "autoWidth": false,
+            "lengthChange": true,
+            "fixedColumns": {
+                "leftColumns": 2
+            },
             "ajax": {
                 "url": "{{JsonUrl}}",
                 "type": "POST",
@@ -131,7 +150,22 @@
             ],
             "order": [[ 1, "asc" ]],
         });
-
+        oTable.columns.adjust().draw();
+        //Search field
+        $.each($('.input-filter', oTable.table().header()), function () {
+            var column = oTable.columns($(this).index()+":visible");
+            $( 'input', this).keypress( function (event) {
+                if (event.which == 13) {
+                    $(this).val(this.value);
+                    column.search(this.value).draw();
+                }
+            });
+            $('.clear-text', this).click( function (event) {
+                event.preventDefault();
+                $(this).parent().parent().find("input[type=text]:first").val("");
+                column.search('').draw();
+            });
+        }); // ./Apply the search 
 
         //Modal Display Action
         $("#modal-ajax-handler").on('hidden.bs.modal', function () {

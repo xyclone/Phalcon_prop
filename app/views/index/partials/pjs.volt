@@ -72,7 +72,7 @@ $(document).ready(function(){
                     footerHtml = '<button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times-circle-o fa-fw" aria-hidden="true"></i> Close</button>';
                     $.ajax({
                         type: 'GET',
-                        url: '/projects/details/'+projectid,
+                        url: '/allprojects/details/'+projectid,
                         dataType : 'html',
                         success: function(response){
                             modalId.find(".modal-body").html(response);

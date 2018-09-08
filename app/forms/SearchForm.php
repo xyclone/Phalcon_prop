@@ -359,7 +359,7 @@ data-slider-min="10" data-slider-max="1000" data-slider-step="5" data-slider-val
         $mrt_distance = new Select('mrt_distance_km', $mrt_distance_options);
         $mrt_distance->setAttributes([
             'class' => 'form-control select2',
-            'placeholder' => 'MRT Distance',
+            'placeholder' => 'Any Range',
             'useEmpty'  => true,
             'emptyText' => '- Select MRT Distance -',
             'emptyValue'=> '',
