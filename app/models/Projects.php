@@ -262,8 +262,21 @@ class Projects extends \Phalcon\Mvc\Model
             FROM ".(new self)->getSource()." WHERE top_year REGEXP '^[0-9]+$' ORDER BY top_year ASC";
         $result = new self();
         $conn = $result->getReadConnection();
-        return new Resultset(null, $result, $conn->query($sql, $param));        
+        return new Resultset(null, $result, $conn->query($sql));        
     } 
+
+    /**
+     * [findPsfMinMax description]
+     * @return [type] [description]
+     */
+    public static function findPsfMinMax()
+    {
+        $sql = "SELECT DISTINCT MIN(low_psf) psf_min, MAX(high_psf) psf_max 
+            FROM ".(new self)->getSource()."";
+        $result = new self();
+        $conn = $result->getReadConnection();
+        return new Resultset(null, $result, $conn->query($sql)); 
+    }
 
     /**
      * [findProject description]

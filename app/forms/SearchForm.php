@@ -26,6 +26,7 @@ use Property\Models\PropertyTypes;
 use Property\Models\PropertyUnits;
 use Property\Models\PropertyDistricts;
 use Property\Classes\PropertyClass;
+use Property\Classes\SearchClass;
 
 
 class SearchForm extends Form
@@ -116,39 +117,41 @@ class SearchForm extends Form
         $query_units_max = Projects::findFirst(["columns"=>"MAX(total_units) total_units_max","limit"=>1]);
 
         $total_units_min = new Text('total_units_min');
-        $total_units_min->setLabel('Total Units Min');
+        $total_units_min->setLabel('Min Units');
         $total_units_min->setAttributes([
             'class' => 'form-control',
             'placeholder' => 'Total Units Min',
+            'onkeypress' => 'return isNumberKey(event)',
         ]);
-        $total_units_min->setUserOption('width','col-xs-6 col-sm-6 col-md-3 col-lg-3');
-        $total_units_min->setUserOption('label-width','col-xs-6 col-sm-6 col-md-12 col-lg-12');
-        $total_units_min->setUserOption('input-width','col-xs-6 col-sm-6 col-md-12 col-lg-12');
+        $total_units_min->setUserOption('width','col-xs-12 col-sm-12 col-md-3 col-lg-3');
+        $total_units_min->setUserOption('label-width','col-xs-12 col-sm-12 col-md-12 col-lg-12');
+        $total_units_min->setUserOption('input-width','col-xs-12 col-sm-12 col-md-12 col-lg-12');
         $total_units_min->setUserOption('is-touchspin', true);
         $total_units_min->setUserOption('prefix-label', 'Min Units');
         $total_units_min->setUserOption('value_min', $query_units_min->total_units_min);
         $total_units_min->setUserOption('value_max', $query_units_max->total_units_max);
         $total_units_min->setUserOption('value_interval', 5);
         $total_units_min->setFilters(array('striptags', 'trim', 'int'));
-        $total_units_min->setDefault((int)$query_units_min->total_units_min);
+        $total_units_min->setDefault((int)$query_units_min->total_units_min+5);
         $this->add($total_units_min);  
 
         $total_units_max = new Text('total_units_max');
-        $total_units_max->setLabel('Total Units Max');
+        $total_units_max->setLabel('Max Units');
         $total_units_max->setAttributes([
             'class' => 'form-control',
             'placeholder' => 'Total Units Max',
+            'onkeypress' => 'return isNumberKey(event)',
         ]);
-        $total_units_max->setUserOption('width','col-xs-6 col-sm-6 col-md-3 col-lg-3');
-        $total_units_max->setUserOption('label-width','col-xs-6 col-sm-6 col-md-12 col-lg-12');
-        $total_units_max->setUserOption('input-width','col-xs-6 col-sm-6 col-md-12 col-lg-12');
+        $total_units_max->setUserOption('width','col-xs-12 col-sm-12 col-md-3 col-lg-3');
+        $total_units_max->setUserOption('label-width','col-xs-12 col-sm-12 col-md-12 col-lg-12');
+        $total_units_max->setUserOption('input-width','col-xs-12 col-sm-12 col-md-12 col-lg-12');
         $total_units_max->setUserOption('is-touchspin', true);
         $total_units_max->setUserOption('prefix-label', 'Max Units');
         $total_units_max->setUserOption('value_min', $query_units_min->total_units_min);
         $total_units_max->setUserOption('value_max', $query_units_max->total_units_max);
         $total_units_max->setUserOption('value_interval', 5);
         $total_units_max->setFilters(array('striptags', 'trim', 'int'));
-        $total_units_max->setDefault((int)$query_units_max->total_units_max);
+        $total_units_max->setDefault((int)$query_units_max->total_units_max-5);
         $this->add($total_units_max);  
 
 /*
@@ -240,9 +243,9 @@ data-slider-min="10" data-slider-max="1000" data-slider-step="5" data-slider-val
         // =======================
         // Unit Type
         $units_options = [];
-        $units_query = PropertyUnits::find(["columns"=>"name,description","order"=>"name asc"]);
+        $units_query = (new SearchClass)->unitOptions();
         foreach ($units_query as $key => $value)
-            $units_options[$value->name] = $value->name;
+            $units_options[$key] = $key;
         $unit_type = new Select('unit_type[]', $units_options);
         $unit_type->setAttributes([
             'id' => 'unit_type',
@@ -260,13 +263,14 @@ data-slider-min="10" data-slider-max="1000" data-slider-step="5" data-slider-val
         $min_budget = new Text('min_budget');
         $min_budget->setAttributes([
             'class' => 'form-control',
-            'placeholder' => 'Min Budget'
+            'placeholder' => 'Min Budget',
+            'onkeypress' => 'return isNumberKey(event)',
         ]);
         $min_budget->setUserOption('width','col-xs-12 col-sm-12 col-md-6 col-lg-6');
         $min_budget->setUserOption('input-width','col-xs-12');
         $min_budget->setUserOption('postfix-addon', true);
         $min_budget->setUserOption('postfix-label', 'S$');
-        $min_budget->setFilters(array('striptags', 'trim', 'string'));
+        $min_budget->setFilters(array('striptags', 'trim', 'int'));
         $this->add($min_budget);
 
         // =======================
@@ -274,13 +278,14 @@ data-slider-min="10" data-slider-max="1000" data-slider-step="5" data-slider-val
         $max_budget = new Text('max_budget');
         $max_budget->setAttributes([
             'class' => 'form-control',
-            'placeholder' => 'Max Budget'
+            'placeholder' => 'Max Budget',
+            'onkeypress' => 'return isNumberKey(event)',
         ]);
         $max_budget->setUserOption('width','col-xs-12 col-sm-12 col-md-6 col-lg-6');
         $max_budget->setUserOption('input-width','col-xs-12');
         $max_budget->setUserOption('postfix-addon', true);
         $max_budget->setUserOption('postfix-label', 'S$');
-        $max_budget->setFilters(array('striptags', 'trim', 'string'));
+        $max_budget->setFilters(array('striptags', 'trim', 'int'));
         $this->add($max_budget);
 
         // =======================
@@ -288,13 +293,14 @@ data-slider-min="10" data-slider-max="1000" data-slider-step="5" data-slider-val
         $min_area = new Text('min_area');
         $min_area->setAttributes([
             'class' => 'form-control',
-            'placeholder' => 'Min Area (sqft)'
+            'placeholder' => 'Min Area (sqft)',
+            'onkeypress' => 'return isNumberKey(event)',
         ]);
         $min_area->setUserOption('width','col-xs-12 col-sm-12 col-md-6 col-lg-6');
         $min_area->setUserOption('input-width','col-xs-12');
         $min_area->setUserOption('postfix-addon', true);
         $min_area->setUserOption('postfix-label', 'ft&sup2;');
-        $min_area->setFilters(array('striptags', 'trim', 'string'));
+        $min_area->setFilters(array('striptags', 'trim', 'int'));
         $this->add($min_area);
 
         // =======================
@@ -302,35 +308,54 @@ data-slider-min="10" data-slider-max="1000" data-slider-step="5" data-slider-val
         $max_area = new Text('max_area');
         $max_area->setAttributes([
             'class' => 'form-control',
-            'placeholder' => 'Max Area (sqft)'
+            'placeholder' => 'Max Area (sqft)',
+            'onkeypress' => 'return isNumberKey(event)',
         ]);
         $max_area->setUserOption('width','col-xs-12 col-sm-12 col-md-6 col-lg-6');
         $max_area->setUserOption('input-width','col-xs-12');
         $max_area->setUserOption('postfix-addon', true);
         $max_area->setUserOption('postfix-label', 'ft&sup2;');
-        $max_area->setFilters(array('striptags', 'trim', 'string'));
+        $max_area->setFilters(array('striptags', 'trim', 'int'));
         $this->add($max_area);
         
         // =======================
-        // Tenure
-        $tenures_options=[];
-        $tenures_query = PropertyTenures::find();
-        foreach ($tenures_query as $key => $value)
-            $tenures_options[$value->name] = $value->name;
-        $tenure = new Select('tenure[]', $tenures_options);
-        $tenure->setAttributes([
-            'id' => 'tenure',
-            'class' => 'form-control select2',
-            'placeholder' => 'Tenure',
-            'multiple' => true,
-            'useEmpty'  => true,
-            'emptyText' => '- Select Tenure -',
-            'emptyValue'=> '',
+        // PSF
+        $psf_query = Projects::findPsfMinMax();
+        $psf_min = new Text('psf_min');
+        $psf_min->setLabel('Min PSF');
+        $psf_min->setAttributes([
+            'class' => 'form-control',
+            'placeholder' => 'PSF Min',
+            'onkeypress' => 'return isNumberKey(event)',
         ]);
-        $tenure->setUserOption('width','col-xs-12 col-sm-12 col-md-6 col-lg-6');
-        $tenure->setUserOption('input-width','col-xs-12');
-        $tenure->setFilters(array('striptags', 'trim', 'string'));
-        $this->add($tenure);
+        $psf_min->setUserOption('width','col-xs-12 col-sm-12 col-md-3 col-lg-3');
+        $psf_min->setUserOption('label-width','col-xs-12 col-sm-12 col-md-12 col-lg-12');
+        $psf_min->setUserOption('input-width','col-xs-12 col-sm-12 col-md-12 col-lg-12');
+        $psf_min->setUserOption('is-touchspin', true);
+        $psf_min->setUserOption('value_min', (int)$psf_query[0]->psf_min);
+        $psf_min->setUserOption('value_max', (int)$psf_query[0]->psf_max);
+        $psf_min->setUserOption('value_interval', 1);
+        $psf_min->setFilters(array('striptags', 'trim', 'int'));
+        $psf_min->setDefault((int)$psf_query[0]->psf_min);
+        $this->add($psf_min);  
+
+        $psf_max = new Text('psf_max');
+        $psf_max->setLabel('Max PSF');
+        $psf_max->setAttributes([
+            'class' => 'form-control',
+            'placeholder' => 'PSF Max',
+            'onkeypress' => 'return isNumberKey(event)',
+        ]);
+        $psf_max->setUserOption('width','col-xs-12 col-sm-12 col-md-3 col-lg-3');
+        $psf_max->setUserOption('label-width','col-xs-12 col-sm-12 col-md-12 col-lg-12');
+        $psf_max->setUserOption('input-width','col-xs-12 col-sm-12 col-md-12 col-lg-12');
+        $psf_max->setUserOption('is-touchspin', true);
+        $psf_max->setUserOption('value_min', (int)$psf_query[0]->psf_min);
+        $psf_max->setUserOption('value_max', (int)$psf_query[0]->psf_max);
+        $psf_max->setUserOption('value_interval', 1);
+        $psf_max->setFilters(array('striptags', 'trim', 'int'));
+        $psf_max->setDefault((int)$psf_query[0]->psf_max);
+        $this->add($psf_max); 
 
         // =======================
         // TOP
@@ -359,14 +384,15 @@ data-slider-min="10" data-slider-max="1000" data-slider-step="5" data-slider-val
 
         $top_year_query = Projects::findTopYear();
         $top_year_min = new Text('top_year_min');
-        $top_year_min->setLabel('Top Year Min');
+        $top_year_min->setLabel('Min TOP');
         $top_year_min->setAttributes([
             'class' => 'form-control',
             'placeholder' => 'Top Year Min',
+            'onkeypress' => 'return isNumberKey(event)',
         ]);
-        $top_year_min->setUserOption('width','col-xs-6 col-sm-6 col-md-3 col-lg-3');
-        $top_year_min->setUserOption('label-width','col-xs-6 col-sm-6 col-md-12 col-lg-12');
-        $top_year_min->setUserOption('input-width','col-xs-6 col-sm-6 col-md-12 col-lg-12');
+        $top_year_min->setUserOption('width','col-xs-12 col-sm-12 col-md-3 col-lg-3');
+        $top_year_min->setUserOption('label-width','col-xs-12 col-sm-12 col-md-12 col-lg-12');
+        $top_year_min->setUserOption('input-width','col-xs-12 col-sm-12 col-md-12 col-lg-12');
         $top_year_min->setUserOption('is-touchspin', true);
         $top_year_min->setUserOption('prefix-label', 'Min TOP');
         $top_year_min->setUserOption('value_min', (int)$top_year_query[0]->top_min);
@@ -377,14 +403,15 @@ data-slider-min="10" data-slider-max="1000" data-slider-step="5" data-slider-val
         $this->add($top_year_min);  
 
         $top_year_max = new Text('top_year_max');
-        $top_year_max->setLabel('Top Year Max');
+        $top_year_max->setLabel('Max TOP');
         $top_year_max->setAttributes([
             'class' => 'form-control',
             'placeholder' => 'Top Year Max',
+            'onkeypress' => 'return isNumberKey(event)',
         ]);
-        $top_year_max->setUserOption('width','col-xs-6 col-sm-6 col-md-3 col-lg-3');
-        $top_year_max->setUserOption('label-width','col-xs-6 col-sm-6 col-md-12 col-lg-12');
-        $top_year_max->setUserOption('input-width','col-xs-6 col-sm-6 col-md-12 col-lg-12');
+        $top_year_max->setUserOption('width','col-xs-12 col-sm-12 col-md-3 col-lg-3');
+        $top_year_max->setUserOption('label-width','col-xs-12 col-sm-12 col-md-12 col-lg-12');
+        $top_year_max->setUserOption('input-width','col-xs-12 col-sm-12 col-md-12 col-lg-12');
         $top_year_max->setUserOption('is-touchspin', true);
         $top_year_max->setUserOption('prefix-label', 'Max TOP');
         $top_year_max->setUserOption('value_min', (int)$top_year_query[0]->top_min);
@@ -393,6 +420,27 @@ data-slider-min="10" data-slider-max="1000" data-slider-step="5" data-slider-val
         $top_year_max->setFilters(array('striptags', 'trim', 'int'));
         $top_year_max->setDefault((int)date("Y"));
         $this->add($top_year_max); 
+
+        // =======================
+        // Tenure
+        $tenures_options=[];
+        $tenures_query = (new SearchClass)->tenureOptions();
+        foreach ($tenures_query as $key => $value)
+            $tenures_options[$key] = $key;
+        $tenure = new Select('tenure[]', $tenures_options);
+        $tenure->setAttributes([
+            'id' => 'tenure',
+            'class' => 'form-control select2',
+            'placeholder' => 'Tenure',
+            'multiple' => true,
+            'useEmpty'  => true,
+            'emptyText' => '- Select Tenure -',
+            'emptyValue'=> '',
+        ]);
+        $tenure->setUserOption('width','col-xs-12 col-sm-12 col-md-6 col-lg-6');
+        $tenure->setUserOption('input-width','col-xs-12');
+        $tenure->setFilters(array('striptags', 'trim', 'string'));
+        $this->add($tenure);
 
         // =======================
         // MRT
@@ -410,8 +458,9 @@ data-slider-min="10" data-slider-max="1000" data-slider-step="5" data-slider-val
             'emptyText' => '- Select MRT -',
             'emptyValue'=> '',
         ]);
-        $mrt->setUserOption('width','col-xs-12 col-sm-12 col-md-6 col-lg-6');
-        $mrt->setUserOption('input-width','col-xs-12');
+        $mrt->setUserOption('width','col-xs-12 col-sm-12 col-md-3 col-lg-3');
+        $mrt->setUserOption('label-width','col-xs-12 col-sm-12 col-md-12 col-lg-12');
+        $mrt->setUserOption('input-width','col-xs-12 col-sm-12 col-md-12 col-lg-12');
         $mrt->setFilters(array('striptags', 'trim', 'string'));
         $this->add($mrt);      
 
@@ -444,10 +493,9 @@ data-slider-min="10" data-slider-max="1000" data-slider-step="5" data-slider-val
             'emptyText' => '- Select MRT Distance -',
             'emptyValue'=> '',
         ]);
-        $mrt_distance->setUserOption('width','col-xs-12 col-sm-12 col-md-6 col-lg-6');
-        $mrt_distance->setUserOption('input-width','col-xs-12');
-        // $mrt_distance->setUserOption('postfix-addon', true);
-        // $mrt_distance->setUserOption('postfix-label', 'meters');
+        $mrt_distance->setUserOption('width','col-xs-12 col-sm-12 col-md-3 col-lg-3');
+        $mrt_distance->setUserOption('label-width','col-xs-12 col-sm-12 col-md-12 col-lg-12');
+        $mrt_distance->setUserOption('input-width','col-xs-12 col-sm-12 col-md-12 col-lg-12');
         $mrt_distance->setFilters(array('striptags', 'trim', 'string'));
         $this->add($mrt_distance);         
 

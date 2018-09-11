@@ -13,19 +13,21 @@
                     <div class="box-body">
 		                {% if form is not empty %}
 		                    {% for field in form %}
-		                        <div class="form-group {{ field.getUserOption('group-req') }} {{ field.getUserOption('width') }} {{ field.getUserOption('ishidden') }}">
-                                    <div class="{{ field.getUserOption('input-width') }}">
-                                        {% if field.getUserOption('funkyCheckbox') %}                                     
+                                {% if field.getUserOption('funkyCheckbox') %}  
+                                    <div class="form-group {{ field.getUserOption('group-req') }} {{ field.getUserOption('width') }} {{ field.getUserOption('ishidden') }}">
+                                        <div class="{{ field.getUserOption('input-width') }}">                    
                                             <div class="funkyradio">
                                                 <div class="funkyradio-success">
                                                     {{ field }}
                                                     <label for="{{ field.getName() }}">{{ field.getLabel() }}</label>
                                                 </div>
                                             </div>
-                                        {% elseif field.getUserOption('is-touchspin') %}
-                                            <div class="input-group">
-                                                {{ field }}
-                                            </div>
+    		                            </div>
+    		                        </div>
+                                {% elseif field.getUserOption('is-touchspin') %}
+                                    <div class="form-group {{ field.getUserOption('group-req') }} {{ field.getUserOption('width') }} {{ field.getUserOption('ishidden') }}" style="display:inline !important;">
+                                        <div class="{{ field.getUserOption('input-width') }}">
+                                            <div class="input-group">{{ field }}</div>
                                             <script>
                                                 $("input[name='{{ field.getName() }}']").TouchSpin({
                                                     min: parseInt("{{field.getUserOption('value_min')}}"),
@@ -34,65 +36,27 @@
                                                     decimals: 0,
                                                     boostat: 5,
                                                     maxboostedstep: 10,
-                                                    prefix: "{{field.getUserOption('prefix-label')}}"
+                                                    prefix: "{{ field.getLabel() }}"
                                                 });
-                                            </script>
-                                        {% elseif field.getUserOption('is-slider') %}
-                                            <div class="form-group">{{ field }}
-                                                <label for="{{ field.getName() }}" class="control-label">{{ field.getLabel() }} <span id="{{ field.getUserOption('div_slider') }}" class="p-3 mb-2 bg-primary text-white" style="padding:0 5px;"></span></label>
-                                                <div id="{{ field.getUserOption('div_adv_slide') }}" ></div>
-                                            </div>
-                                            <script>
-                                                $(document).ready(function(){
-                                                    'use strict';
-                                                    var getOutput = $("#{{ field.getUserOption('div_slider') }}");
-                                                    var getSlider = $("#{{ field.getUserOption('div_adv_slide') }}");
-                                                    var fieldName = "{{ field.getName() }}";
-                                                    if(fieldName!=undefined) {
-                                                        switch(fieldName) {
-                                                            case 'top_year':
-                                                                var min_val = parseInt("{{ field.getUserOption('slider_min') }}");
-                                                                var max_val = parseInt("{{ field.getUserOption('slider_max') }}");
-                                                                var max_step = 1;
-                                                                var slider_val1 = parseInt((new Date()).getFullYear()-10);
-                                                                var slider_val2 = parseInt((new Date()).getFullYear());
-                                                                break;
-                                                            case 'total_units':
-                                                            default:
-                                                                var min_val = 0;
-                                                                var max_val = 1000;
-                                                                var max_step = 5;
-                                                                var slider_val1 = 10;
-                                                                var slider_val2 = 100;
-                                                                break;
-                                                        }
-                                                    }
-                                                    getSlider.slider({
-                                                        range:true,
-                                                        min:min_val,
-                                                        max:max_val,
-                                                        values:[slider_val1, slider_val2],
-                                                        step:max_step,
-                                                        slide:function(event, ui){
-                                                            getOutput.html(ui.values[0]+' - '+ui.values[1]);
-                                                            $("#{{ field.getName() }}").val(ui.values[0]+'-'+ui.values[1]);
-                                                        }
-                                                    });
-                                                    getOutput.html(getSlider.slider("values",0)+' - '+getSlider.slider("values",1));
-                                                    $("#{{ field.getName() }}").val(getSlider.slider('values', 0)+'-'+getSlider.slider('values', 1));
-                                                });
-                                            </script>
-                                            
-                                        {% elseif field.getUserOption('postfix-addon') %}
+                                            </script> 
+                                        </div>
+                                    </div>
+                                {% elseif field.getUserOption('postfix-addon') %}
+                                    <div class="form-group {{ field.getUserOption('group-req') }} {{ field.getUserOption('width') }} {{ field.getUserOption('ishidden') }}">
+                                        <div class="{{ field.getUserOption('input-width') }}">
                                             <div class="input-group">
                                                 {{ field }}
                                                 <span class="input-group-addon"><b>{{field.getUserOption('postfix-label')}}</b></span>
                                             </div>
-                                        {% else %}
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div class="form-group {{ field.getUserOption('group-req') }} {{ field.getUserOption('width') }} {{ field.getUserOption('ishidden') }}">
+                                        <div class="{{ field.getUserOption('input-width') }}">
                                             {{ field }}
-                                        {% endif %}
-		                            </div>
-		                        </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
 		                    {% endfor %}   
 		                {% endif %}                      
                         <br>
