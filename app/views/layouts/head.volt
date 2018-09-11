@@ -94,9 +94,13 @@
   {{ stylesheet_link('plugins/funky/funky.css') }}
 
   <!-- Bootstrap Slider -->
-  {{ stylesheet_link('plugins/bootstrap-slider/css/bootstrap-slider.min.css') }}
-  {{ stylesheet_link('plugins/bootstrap-slider/css/highlightjs-github-theme.css') }}
-  {{ javascript_include('plugins/bootstrap-slider/bootstrap-slider.min.js') }}
+  <!-- { { stylesheet_link('plugins/bootstrap-slider/css/bootstrap-slider.min.css') }}
+  { { stylesheet_link('plugins/bootstrap-slider/css/highlightjs-github-theme.css') }}
+  { { javascript_include('plugins/bootstrap-slider/bootstrap-slider.min.js') }} -->
+
+    <!-- Bootstrap Touchspin -->
+  {{ stylesheet_link('plugins/bootstrap-touchspin/jquery.bootstrap-touchspin.min.css') }}
+  {{ javascript_include('plugins/bootstrap-touchspin/jquery.bootstrap-touchspin.min.js') }}
 
   <!-- Jquery Mobile Slider -->
   <!-- { { stylesheet_link('plugins/jquery-mobile/jquery.mobile-1.4.5.min.css') }}

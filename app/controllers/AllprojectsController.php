@@ -680,7 +680,6 @@ class AllprojectsController extends ControllerBase
                                 case 'date_updated':
                                 case 'completion_date':
                                 case 'available_date':
-                                case 'transaction_month':
                                     $response .= '<div class="col-xs-3">'; //$project->$fldname date("d-M-Y", strtotime($project->$fldname))
                                     $date_value = (!empty($project->$fldname)&&strtotime($project->$fldname)>=0) ? date("d-M-Y", strtotime($project->$fldname))  : ''; 
                                     $response .= '<input type="text" id="'.$fldname.'" name="'.$fldname.'" class="form-control text-strong datepick" value="'.$date_value.'" >'; //placeholder="'.ucwords(str_replace('_',' ',$fldname)).'"
@@ -766,7 +765,12 @@ class AllprojectsController extends ControllerBase
                                         $response .= '</div>';
                                     $response .= '</div>'; 
                                     break;
+                                case 'low_psf':
+                                case 'median_psf':
+                                case 'high_psf':
+                                case 'no_transactions':
                                 case 'project_name':
+                                case 'transaction_month':
                                     $response .= '<div class="col-xs-3">';
                                     $response .= '<input type="text" id="'.$fldname.'" name="'.$fldname.'" class="form-control text-strong" readonly value="'.$project->$fldname.'">';
                                     $response .= '</div>';
@@ -809,12 +813,12 @@ class AllprojectsController extends ControllerBase
             $(".select2").select2({theme: "bootstrap", width: "100%", placeholder: "- Select -",});
             
             $(".numericOnly").ForceNumericOnly();
-            $(document).on("keydown", "#status_date, #status2_date, #gls_sold_date, #date_avail_unit_updated, #vacant_date, #stb_application_date, #stb_approval_date, #approved_date, #issue_date, #completion_date, #ds_date, #vacant_possession_date, #date_updated, #available_date", function(e) {
+            $(document).on("keydown", "#status_date, #status2_date, #gls_sold_date, #date_avail_unit_updated, #vacant_date, #stb_application_date, #stb_approval_date, #approved_date, #issue_date, #completion_date, #ds_date, #vacant_possession_date, #date_updated, #available_date, #transaction_month", function(e) {
                 var code = (e.keyCode || e.which);
                 if(code===8 || code===46 || code===37 || code===38 || code===39) return false;
                 e.preventDefault();
             });
-            $("#status_date, #status2_date, #gls_sold_date, #date_avail_unit_updated, #vacant_date, #stb_application_date, #stb_approval_date, #approved_date, #issue_date, #completion_date, #ds_date, #vacant_possession_date, #date_updated, #available_date").datetimepicker({
+            $("#status_date, #status2_date, #gls_sold_date, #date_avail_unit_updated, #vacant_date, #stb_application_date, #stb_approval_date, #approved_date, #issue_date, #completion_date, #ds_date, #vacant_possession_date, #date_updated, #available_date, #transaction_month").datetimepicker({
                 format:"d-M-Y",
                 timepicker: false
             }); 
@@ -839,12 +843,17 @@ class AllprojectsController extends ControllerBase
         $saveProject = Projects::findFirst(['conditions'=>'id=?1','bind'=>[1=>$id]]);  
         if(!$saveProject) {
             $result = Helpers::notify('error', 'Unable to find project.');
-        } else {          
-            //unset($projectName);
+        } else {                   
             $updateDetails = false;
-            //$saveProject = Projects::findFirst(["conditions"=>"id=?1","bind"=>[1=>$projectName[0]->id]]);
             foreach ($data as $field => $value) {
                 switch ($field) {
+                    case 'low_psf':
+                    case 'median_psf':
+                    case 'high_psf':
+                    case 'no_transactions':
+                    
+                        continue;
+                        break;
                     case 'project_type':
                         if($saveProject->$field!=$value) $updateDetails = true;
                         $saveProject->$field = (!empty($value)) ? $value : NULL;
@@ -884,12 +893,12 @@ class AllprojectsController extends ControllerBase
                     case 'vacant_possession_date':
                     case 'date_updated':
                     case 'completion_date':
+                    case 'transaction_month':
                         if(!empty($value)) {
                             $date = \DateTime::createFromFormat('d-M-Y', trim($value));
                             $saveProject->$field = $date->format('Y-m-d');
                         }              
                         break;
-                    case 'no_transactions':
                     case 'no_of_rentals':
                     case 'highest_flr':
                     case 'top_no':
@@ -899,9 +908,6 @@ class AllprojectsController extends ControllerBase
                         }
                         break;
                     case 'mrt_distance':
-                    case 'low_psf':
-                    case 'median_psf':
-                    case 'high_psf':
                     case 'floor_area':
                     case 'cost':
                     case 'rental_low_psf_pm':

@@ -300,12 +300,18 @@ class IndexController extends ControllerBase
         //if (!$this->security->checkToken())  return $this->redirectBack();
         if (!$this->request->get()) {  return $this->redirect('index'); }
         $data = $this->request->get();
-        if(is_array($data['district'])&&count($data['district'])>0) {
-            $planning_areas = Projects::find(["columns"=>"DISTINCT planning_area ","conditions"=>"district IN ({dist:array}) AND planning_area IS NOT NULL",
-                "bind"=>["dist"=>$data['district']]]);
+        if(!empty($data['district'])&&is_array($data['district'])&&count($data['district'])>0) {
+            $planning_areas = Projects::find(["columns"=>"DISTINCT CONCAT(planning_area,' (',district,')') planning_area","conditions"=>"district IN ({dist:array}) AND planning_area IS NOT NULL", "bind"=>["dist"=>$data['district']]]);
             if($planning_areas&&$planning_areas->count()>0) {
                 foreach ($planning_areas as $key => $pa) {
                     $response[$pa->planning_area] = $pa->planning_area;
+                }
+            }
+        } else {
+            $query_planning_area = Projects::find(["columns"=>"DISTINCT CONCAT(planning_area,' (',district,')') planning_area","conditions"=>"CONCAT(planning_area,' (',district,')') IS NOT NULL","order"=>"planning_area ASC"]);
+            if($query_planning_area&&$query_planning_area->count()) {
+                foreach ($query_planning_area as $key => $field) {
+                    $response[$field->planning_area] = $field->planning_area;
                 }
             }
         }
@@ -317,24 +323,41 @@ class IndexController extends ControllerBase
      * [getmrtdistanceAction description]
      * @return [type] [description]
      */ //echo '<pre>'; var_dump($data); echo '</pre>'; die();   
-    // public function getmrtdistanceAction()
-    // {
-    //     $this->view->disable();
-    //     $response=[];
-    //     if (!$this->request->get()) {  return $this->redirect('index'); }
-    //     $data = $this->request->get();
-    //     if(is_array($data['district'])&&count($data['district'])>0) {
-    //         $planning_areas = Projects::find(["columns"=>"DISTINCT planning_area ","conditions"=>"district IN ({dist:array}) AND planning_area IS NOT NULL",
-    //             "bind"=>["dist"=>$data['district']]]);
-    //         if($planning_areas&&$planning_areas->count()>0) {
-    //             foreach ($planning_areas as $key => $pa) {
-    //                 $response[$pa->planning_area] = $pa->planning_area;
-    //             }
-    //         }
-    //     }
-    //     $this->response->setJsonContent($response);
-    //     return $this->response;
-    // }
+    public function getmrtdistanceAction()
+    {
+        $this->view->disable();
+        $response=[];
+        if (!$this->request->get()) {  return $this->redirect('index'); }
+        $data = $this->request->get();
+        if(!empty($data['mrt'])&&is_array($data['mrt'])&&count($data['mrt'])>0) {
+            $mrt_distance = Projects::find(["columns"=>"DISTINCT CONCAT(mrt_distance_km,'km (',mrt,')') mrt_distance_km","conditions"=>"mrt IN ({mrt:array}) AND mrt_distance_km IS NOT NULL", "order"=>"mrt_distance_km asc", "bind"=>["mrt"=>$data['mrt']]]);
+            if($mrt_distance&&$mrt_distance->count()>0) {
+                foreach ($mrt_distance as $key => $mrtdist) {
+                    $response[$mrtdist->mrt_distance_km] = $mrtdist->mrt_distance_km;
+                }
+            }
+        } else {
+            $response = [
+            '50'=>'50m',
+            '100'=>'100m',
+            '150'=>'150m',
+            '200'=>'200m',
+            '250'=>'250m',
+            '300'=>'300m',
+            '350'=>'350m',
+            '400'=>'400m',
+            '450'=>'450m',
+            '500'=>'500m',
+            '600'=>'600m',
+            '700'=>'700m',
+            '800'=>'800m',
+            '900'=>'900m',
+            '1000'=>'1km',
+            '2000'=>'> 1km'];
+        }
+        $this->response->setJsonContent($response);
+        return $this->response;
+    }
 
     /**
      * [getprimaryschoolAction description]

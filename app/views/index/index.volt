@@ -14,7 +14,7 @@
 		                {% if form is not empty %}
 		                    {% for field in form %}
 		                        <div class="form-group {{ field.getUserOption('group-req') }} {{ field.getUserOption('width') }} {{ field.getUserOption('ishidden') }}">
-		                            <div class="{{ field.getUserOption('input-width') }}">
+                                    <div class="{{ field.getUserOption('input-width') }}">
                                         {% if field.getUserOption('funkyCheckbox') %}                                     
                                             <div class="funkyradio">
                                                 <div class="funkyradio-success">
@@ -22,20 +22,22 @@
                                                     <label for="{{ field.getName() }}">{{ field.getLabel() }}</label>
                                                 </div>
                                             </div>
+                                        {% elseif field.getUserOption('is-touchspin') %}
+                                            <div class="input-group">
+                                                {{ field }}
+                                            </div>
+                                            <script>
+                                                $("input[name='{{ field.getName() }}']").TouchSpin({
+                                                    min: parseInt("{{field.getUserOption('value_min')}}"),
+                                                    max: parseInt("{{field.getUserOption('value_max')}}"),
+                                                    step: parseInt("{{ field.getUserOption('value_interval') }}"),
+                                                    decimals: 0,
+                                                    boostat: 5,
+                                                    maxboostedstep: 10,
+                                                    prefix: "{{field.getUserOption('prefix-label')}}"
+                                                });
+                                            </script>
                                         {% elseif field.getUserOption('is-slider') %}
-                                            <!-- <div data-role="rangeslider">
-                                                <label for="price-min">Total Units:</label>
-                                                <input type="range" name="price-min" id="price-min" value="5" min="0" max="1000">
-                                                <label for="price-max">Total Units:</label>
-                                                <input type="range" name="price-max" id="price-max" value="800" min="0" max="1000">
-                                            </div> -->
-                                            <!-- <div class="form-group">
-                                                <label for="{ { field.getName() }}" class="control-label { { field.getUserOption('label-width') }}"></label>
-                                                <label for="{ { field.getName() }}"class="control-label { { field.getUserOption('label-width') }}"><h5>{ { field.getLabel() }}</h5></label>
-                                                <div class="{ { field.getUserOption('input-width') }}">
-                                                    { { field }}
-                                                </div>
-                                            </div> -->
                                             <div class="form-group">{{ field }}
                                                 <label for="{{ field.getName() }}" class="control-label">{{ field.getLabel() }} <span id="{{ field.getUserOption('div_slider') }}" class="p-3 mb-2 bg-primary text-white" style="padding:0 5px;"></span></label>
                                                 <div id="{{ field.getUserOption('div_adv_slide') }}" ></div>

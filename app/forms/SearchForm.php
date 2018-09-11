@@ -112,25 +112,44 @@ class SearchForm extends Form
 
         // =======================
         // Total Units
-        $total_units = new Hidden('total_units');
-        $total_units->setLabel('Total no. of units:');
-        $total_units->setAttributes([
+        $query_units_min = Projects::findFirst(["columns"=>"MIN(total_units) total_units_min","limit"=>1]);   
+        $query_units_max = Projects::findFirst(["columns"=>"MAX(total_units) total_units_max","limit"=>1]);
+
+        $total_units_min = new Text('total_units_min');
+        $total_units_min->setLabel('Total Units Min');
+        $total_units_min->setAttributes([
             'class' => 'form-control',
-            'placeholder' => 'Total Units',
+            'placeholder' => 'Total Units Min',
         ]);
-        $total_units->setUserOption('width','col-xs-12 col-sm-12 col-md-6 col-lg-6');
-        $total_units->setUserOption('label-width','col-xs-12 col-sm-12 col-md-6 col-lg-6');
-        $total_units->setUserOption('input-width','col-xs-12 col-sm-12 col-md-6 col-lg-6');
-        $total_units->setUserOption('is-slider',true);
-        $total_units->setUserOption('div_slider','TU_state');
-        $total_units->setUserOption('div_adv_slide','TU_advance_slide');
-        $total_units->setUserOption('slider_min', 0);
-        $total_units->setUserOption('slider_max', 1000);
-        $total_units->setUserOption('slider_step', 5);
-        $total_units->setUserOption('slider_val1', 10);
-        $total_units->setUserOption('slider_val2', 100);
-        $total_units->setFilters(array('striptags', 'trim', 'string'));
-        $this->add($total_units);        
+        $total_units_min->setUserOption('width','col-xs-6 col-sm-6 col-md-3 col-lg-3');
+        $total_units_min->setUserOption('label-width','col-xs-6 col-sm-6 col-md-12 col-lg-12');
+        $total_units_min->setUserOption('input-width','col-xs-6 col-sm-6 col-md-12 col-lg-12');
+        $total_units_min->setUserOption('is-touchspin', true);
+        $total_units_min->setUserOption('prefix-label', 'Min Units');
+        $total_units_min->setUserOption('value_min', $query_units_min->total_units_min);
+        $total_units_min->setUserOption('value_max', $query_units_max->total_units_max);
+        $total_units_min->setUserOption('value_interval', 5);
+        $total_units_min->setFilters(array('striptags', 'trim', 'int'));
+        $total_units_min->setDefault((int)$query_units_min->total_units_min);
+        $this->add($total_units_min);  
+
+        $total_units_max = new Text('total_units_max');
+        $total_units_max->setLabel('Total Units Max');
+        $total_units_max->setAttributes([
+            'class' => 'form-control',
+            'placeholder' => 'Total Units Max',
+        ]);
+        $total_units_max->setUserOption('width','col-xs-6 col-sm-6 col-md-3 col-lg-3');
+        $total_units_max->setUserOption('label-width','col-xs-6 col-sm-6 col-md-12 col-lg-12');
+        $total_units_max->setUserOption('input-width','col-xs-6 col-sm-6 col-md-12 col-lg-12');
+        $total_units_max->setUserOption('is-touchspin', true);
+        $total_units_max->setUserOption('prefix-label', 'Max Units');
+        $total_units_max->setUserOption('value_min', $query_units_min->total_units_min);
+        $total_units_max->setUserOption('value_max', $query_units_max->total_units_max);
+        $total_units_max->setUserOption('value_interval', 5);
+        $total_units_max->setFilters(array('striptags', 'trim', 'int'));
+        $total_units_max->setDefault((int)$query_units_max->total_units_max);
+        $this->add($total_units_max);  
 
 /*
 data-slider-min="10" data-slider-max="1000" data-slider-step="5" data-slider-value="[250,450]"
@@ -181,7 +200,14 @@ data-slider-min="10" data-slider-max="1000" data-slider-step="5" data-slider-val
 
         // =======================
         // Planning Area
-        $planning_area = new Select('planning_area[]',[]);
+        $planning_area_options = [];
+        $query_planning_area = Projects::find(["columns"=>"DISTINCT CONCAT(planning_area,' (',district,')') planning_area","conditions"=>"CONCAT(planning_area,' (',district,')') IS NOT NULL","order"=>"planning_area ASC"]);
+        if($query_planning_area&&$query_planning_area->count()) {
+            foreach ($query_planning_area as $key => $field) {
+                $planning_area_options[$field->planning_area] = $field->planning_area;
+            }
+        }
+        $planning_area = new Select('planning_area[]', $planning_area_options);
         $planning_area->setAttributes([
             'id' => 'planning_area',
             'class' => 'form-control select2',
@@ -239,7 +265,7 @@ data-slider-min="10" data-slider-max="1000" data-slider-step="5" data-slider-val
         $min_budget->setUserOption('width','col-xs-12 col-sm-12 col-md-6 col-lg-6');
         $min_budget->setUserOption('input-width','col-xs-12');
         $min_budget->setUserOption('postfix-addon', true);
-        $min_budget->setUserOption('postfix-label', 'SGD$');
+        $min_budget->setUserOption('postfix-label', 'S$');
         $min_budget->setFilters(array('striptags', 'trim', 'string'));
         $this->add($min_budget);
 
@@ -253,7 +279,7 @@ data-slider-min="10" data-slider-max="1000" data-slider-step="5" data-slider-val
         $max_budget->setUserOption('width','col-xs-12 col-sm-12 col-md-6 col-lg-6');
         $max_budget->setUserOption('input-width','col-xs-12');
         $max_budget->setUserOption('postfix-addon', true);
-        $max_budget->setUserOption('postfix-label', 'SGD$');
+        $max_budget->setUserOption('postfix-label', 'S$');
         $max_budget->setFilters(array('striptags', 'trim', 'string'));
         $this->add($max_budget);
 
@@ -308,29 +334,65 @@ data-slider-min="10" data-slider-max="1000" data-slider-step="5" data-slider-val
 
         // =======================
         // TOP
-        $top_year_query = Projects::findTopYear();
-        $top_year = new Hidden('top_year');
-        $top_year->setLabel('Top Year:');
-        $top_year->setAttributes([
-            'class' => 'form-control',
-            'placeholder' => 'Top Year',
-        ]);
-        $top_year->setUserOption('width','col-xs-12 col-sm-12 col-md-6 col-lg-6');
-        $top_year->setUserOption('label-width','col-xs-12 col-sm-12 col-md-6 col-lg-6');
-        $top_year->setUserOption('input-width','col-xs-12 col-sm-12 col-md-6 col-lg-6');
-        $top_year->setUserOption('is-slider',true);
-        $top_year->setUserOption('div_slider','TY_state');
-        $top_year->setUserOption('div_adv_slide','TY_advance_slide');
-        if($top_year_query&&$top_year_query->count()>0) {
-            $top_year->setUserOption('slider_min', (int)$top_year_query[0]->top_min);
-            $top_year->setUserOption('slider_max', (int)$top_year_query[0]->top_max);
-            $top_year->setUserOption('slider_step', 1);
-            $top_year->setUserOption('slider_val1', (int)$top_year_query[0]->top_min);
-            $top_year->setUserOption('slider_val2', (int)date("Y"));
-        }
-        $top_year->setFilters(array('striptags', 'trim', 'int'));
-        $this->add($top_year);   
+        // $top_year_query = Projects::findTopYear();
+        // $top_year = new Hidden('top_year');
+        // $top_year->setLabel('Top Year:');
+        // $top_year->setAttributes([
+        //     'class' => 'form-control',
+        //     'placeholder' => 'Top Year',
+        // ]);
+        // $top_year->setUserOption('width','col-xs-12 col-sm-12 col-md-6 col-lg-6');
+        // $top_year->setUserOption('label-width','col-xs-12 col-sm-12 col-md-6 col-lg-6');
+        // $top_year->setUserOption('input-width','col-xs-12 col-sm-12 col-md-6 col-lg-6');
+        // $top_year->setUserOption('is-slider',true);
+        // $top_year->setUserOption('div_slider','TY_state');
+        // $top_year->setUserOption('div_adv_slide','TY_advance_slide');
+        // if($top_year_query&&$top_year_query->count()>0) {
+        //     $top_year->setUserOption('slider_min', (int)$top_year_query[0]->top_min);
+        //     $top_year->setUserOption('slider_max', (int)$top_year_query[0]->top_max);
+        //     $top_year->setUserOption('slider_step', 1);
+        //     $top_year->setUserOption('slider_val1', (int)$top_year_query[0]->top_min);
+        //     $top_year->setUserOption('slider_val2', (int)date("Y"));
+        // }
+        // $top_year->setFilters(array('striptags', 'trim', 'int'));
+        // $this->add($top_year);   
 
+        $top_year_query = Projects::findTopYear();
+        $top_year_min = new Text('top_year_min');
+        $top_year_min->setLabel('Top Year Min');
+        $top_year_min->setAttributes([
+            'class' => 'form-control',
+            'placeholder' => 'Top Year Min',
+        ]);
+        $top_year_min->setUserOption('width','col-xs-6 col-sm-6 col-md-3 col-lg-3');
+        $top_year_min->setUserOption('label-width','col-xs-6 col-sm-6 col-md-12 col-lg-12');
+        $top_year_min->setUserOption('input-width','col-xs-6 col-sm-6 col-md-12 col-lg-12');
+        $top_year_min->setUserOption('is-touchspin', true);
+        $top_year_min->setUserOption('prefix-label', 'Min TOP');
+        $top_year_min->setUserOption('value_min', (int)$top_year_query[0]->top_min);
+        $top_year_min->setUserOption('value_max', (int)$top_year_query[0]->top_max);
+        $top_year_min->setUserOption('value_interval', 1);
+        $top_year_min->setFilters(array('striptags', 'trim', 'int'));
+        $top_year_min->setDefault((int)date("Y")-10);
+        $this->add($top_year_min);  
+
+        $top_year_max = new Text('top_year_max');
+        $top_year_max->setLabel('Top Year Max');
+        $top_year_max->setAttributes([
+            'class' => 'form-control',
+            'placeholder' => 'Top Year Max',
+        ]);
+        $top_year_max->setUserOption('width','col-xs-6 col-sm-6 col-md-3 col-lg-3');
+        $top_year_max->setUserOption('label-width','col-xs-6 col-sm-6 col-md-12 col-lg-12');
+        $top_year_max->setUserOption('input-width','col-xs-6 col-sm-6 col-md-12 col-lg-12');
+        $top_year_max->setUserOption('is-touchspin', true);
+        $top_year_max->setUserOption('prefix-label', 'Max TOP');
+        $top_year_max->setUserOption('value_min', (int)$top_year_query[0]->top_min);
+        $top_year_max->setUserOption('value_max', (int)$top_year_query[0]->top_max);
+        $top_year_max->setUserOption('value_interval', 1);
+        $top_year_max->setFilters(array('striptags', 'trim', 'int'));
+        $top_year_max->setDefault((int)date("Y"));
+        $this->add($top_year_max); 
 
         // =======================
         // MRT
@@ -355,25 +417,57 @@ data-slider-min="10" data-slider-max="1000" data-slider-step="5" data-slider-val
 
         // =======================
         // MRT Distance
-        $mrt_distance_options = ['0-100'=>'0 - 100','101-200'=>'101 - 200','201-300'=>'201 - 300','301-400'=>'301 - 400','401-500'=>'401 - 500'];
-        $mrt_distance = new Select('mrt_distance_km', $mrt_distance_options);
+        $mrt_distance_options = [
+            '50'=>'50m',
+            '100'=>'100m',
+            '150'=>'150m',
+            '200'=>'200m',
+            '250'=>'250m',
+            '300'=>'300m',
+            '350'=>'350m',
+            '400'=>'400m',
+            '450'=>'450m',
+            '500'=>'500m',
+            '600'=>'600m',
+            '700'=>'700m',
+            '800'=>'800m',
+            '900'=>'900m',
+            '1000'=>'1km',
+            '2000'=>'> 1km',];
+        $mrt_distance = new Select('mrt_distance_km[]', $mrt_distance_options);
         $mrt_distance->setAttributes([
+            'id' => 'mrt_distance_km',
             'class' => 'form-control select2',
-            'placeholder' => 'Any Range',
+            'placeholder' => 'MRT Distance',
+            'multiple' => true,
             'useEmpty'  => true,
             'emptyText' => '- Select MRT Distance -',
             'emptyValue'=> '',
         ]);
         $mrt_distance->setUserOption('width','col-xs-12 col-sm-12 col-md-6 col-lg-6');
         $mrt_distance->setUserOption('input-width','col-xs-12');
-        $mrt_distance->setUserOption('postfix-addon', true);
-        $mrt_distance->setUserOption('postfix-label', 'meters');
+        // $mrt_distance->setUserOption('postfix-addon', true);
+        // $mrt_distance->setUserOption('postfix-label', 'meters');
         $mrt_distance->setFilters(array('striptags', 'trim', 'string'));
         $this->add($mrt_distance);         
 
         // =======================
         // Primary School 
         $primary_school_options = [];
+        $query_primary = Projects::find(["columns"=>"primary_school_within_1km","conditions"=>"primary_school_within_1km IS NOT NULL"]);
+        if($query_primary&&$query_primary->count()>0) {
+            foreach ($query_primary as $key => $field) {
+                if(strpos($field->primary_school_within_1km, ",")) {
+                    $primary = array_map('trim', explode(',', $field->primary_school_within_1km));
+                    foreach ($primary as $pmschool) {
+                        $primary_school_options[$pmschool] = $pmschool;
+                    }
+                } else {
+                    $primary_school_options[$field->primary_school_within_1km] = $field->primary_school_within_1km;
+                }
+            }
+        }
+        sort($primary_school_options);
         $primary_school = new Select('primary_school_within_1km[]', $primary_school_options);
         $primary_school->setAttributes([
             'id' => 'primary_school_within_1km',

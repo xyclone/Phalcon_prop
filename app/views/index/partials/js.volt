@@ -68,63 +68,44 @@ $(document).ready(function(){
 		$("#project_property_type").select2({ placeholder:'- Select Project Property Type -', theme: "bootstrap", width: "100%"});
     });
 
+    //District Change
  	$('#district').on('change', function() {
- 		var selectpa = $('#planning_area');
- 		selectpa.find('option').remove();
- 		var selectps = $('#primary_school_within_1km');
- 		selectps.find('option').remove();
- 		if($(this).val()!=undefined) {
-			$.ajax({
-				url: "../index/getplanningarea",
-                type: "GET",
-                data: { "district": $(this).val() },
-                beforeSend: function (data) {},
-                success:function(data){
-                	if(data!=undefined) {
-	                	$.each(data,function(key, value) {
-					    	selectpa.append('<option value="' + key + '">' + value + '</option>');
-						});
-	                }
+ 		var planning_area = $('#planning_area');
+ 		planning_area.find('option').remove();
+		$.ajax({
+			url: "../index/getplanningarea",
+            type: "GET",
+            data: { "district": $(this).val() },
+            beforeSend: function (data) {},
+            success:function(data){
+            	if(data!=undefined) {
+                	$.each(data,function(key, value) {
+				    	planning_area.append('<option value="' + key + '">' + value + '</option>');
+					});
                 }
-            });
-            $.ajax({
-				url: "../index/getprimaryschool",
-                type: "GET",
-                data: { "district": $(this).val() },
-                beforeSend: function (data) {},
-                success:function(data){
-                	if(data!=undefined) {
-	                	$.each(data,function(key, value) {
-					    	selectps.append('<option value="' + key + '">' + value + '</option>');
-						});
-	                }
-                }
-            });
- 		}
+            }
+        });
  	});
 
-
-
-
- 	/*$('#mrt').on('change', function() {
- 		var select = $('#mrt_distance_km');
- 		select.find('option').remove();
- 		if($(this).val()!=undefined) {
-			$.ajax({
-				url: "../index/getmrtdistance",
-                type: "GET",
-                data: { "mrts": $(this).val() },
-                beforeSend: function (data) {},
-                success:function(data){
-                	if(data!=undefined) {
-	                	$.each(data,function(key, value) {
-					    	select.append('<option value=' + key + '>' + value + '</option>');
-						});
-	                }
+    //MRT Change
+    $('#mrt').on('change', function() {
+        var mrt_distance = $('#mrt_distance_km');
+        mrt_distance.find('option').remove();
+        $.ajax({
+            url: "../index/getmrtdistance",
+            type: "GET",
+            data: { "mrt": $(this).val() },
+            beforeSend: function (data) {},
+            success:function(data){
+                if(data!=undefined) {
+                    $.each(data,function(key, value) {
+                        mrt_distance.append('<option value="' + key + '">' + value + '</option>');
+                    });
                 }
-            });
- 		}
- 	});*/
+            }
+        });
+    });
+
 
 	function resetDisable() {
 		$('input, select').each(
