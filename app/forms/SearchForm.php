@@ -275,7 +275,7 @@ data-slider-min="10" data-slider-max="1000" data-slider-step="5" data-slider-val
         $units_options = [];
         $units_query = (new SearchClass)->unitOptions();
         foreach ($units_query as $key => $value)
-            $units_options[$key] = $key;
+            $units_options[$value] = $key;
         $unit_type = new Select('unit_type[]', $units_options);
         $unit_type->setAttributes([
             'id' => 'unit_type',
