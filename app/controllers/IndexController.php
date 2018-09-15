@@ -60,38 +60,55 @@ class IndexController extends ControllerBase
         //foreach ($data as $key => $value) $data[$key] = $this->filter->sanitize($value, "string");
 
         $sql = ""; $binds = [];
+        //PROJECT TYPE
         if(!empty($data['project_type'])) {
             $binds['project_type'] = $data['project_type'];
         }
+        //PROJ PROP TYPE
         if(!empty($data['project_property_type'])) {
             $binds['proj_property_type'] = $data['project_property_type'];
         }
+        //PROJECT NAME
         if(!empty($data['project_name'])) {
-            $binds['project_name'] = $data['project_name'];
+            $binds['id'] = $data['project_name'];
         }
+        //PLANNING REGION
         if(!empty($data['planning_region'])) {
             $binds['planning_region'] = $data['planning_region'];
         }
+        //PLANNING AREA
         if(!empty($data['planning_area'])) {
             $binds['planning_area'] = $data['planning_area'];
         }
+        //PROPERTY TYPE
         if(!empty($data['property_type'])) {
             $binds['property_type'] = $data['property_type'];
         }
+        //UNIT TYPE
         if(!empty($data['unit_type'])) {
             $binds['unit_type'] = $data['unit_type'];
             if(is_array($data['unit_type'])&&count($data['unit_type'])>0) {
                 $binds['unit_type'] = ["concat_reg"=>true,"function"=>"CONCAT(',',proj.unit_type,',') REGEXP ',(".implode ("|",$data['unit_type'])."),'"];
             }
         }
+        //TENURE
         if(!empty($data['tenure'])) {
             $binds['tenure'] = $data['tenure'];
         }
+        //STREET NAME
         if(!empty($data['street_name'])) {
             $binds['street_name'] = $data['street_name'];
         }
+        //PRI SCHOOL
         if(!empty($data['primary_school_within_1km'])) {
             $binds['primary_school_within_1km'] = $data['primary_school_within_1km'];
+        }
+        //PSF
+        if(!empty($data['psf_min'])) {
+            $binds['psf_min'] = $data['psf_min'];
+        }
+        if(!empty($data['psf_max'])) {
+            $binds['psf_max'] = $data['psf_max'];
         }
 
         $DataCols = array_keys(PropertyClass::$project_fields);
@@ -123,7 +140,7 @@ class IndexController extends ControllerBase
         //if (!$this->security->checkToken())  return $this->redirectBack();
 
         $data = $this->request->getPost();
-#echo '<pre>'; var_dump($data); echo '</pre>'; die();
+
 #echo '<pre>'; var_dump($this->security->checkToken()); echo '</pre>'; die(); 
         $sql = ""; $binds = [];
         if(!empty($data['project_type'])) {
@@ -133,7 +150,7 @@ class IndexController extends ControllerBase
             $binds['proj_property_type'] = $data['proj_property_type'];
         }
         if(!empty($data['project_name'])) {
-            $binds['project_name'] = '%'.$data['project_name'].'%';
+            $binds['project_name'] = $data['project_name'];
         }
         if(!empty($data['district'])) {
             $binds['district'] = $data['district'];
@@ -160,18 +177,24 @@ class IndexController extends ControllerBase
         if(!empty($data['mrt'])) {
             $binds['mrt'] = $data['mrt'];
         }
-        if(!empty($data['top_year'])) {
-            $binds['top_year'] = $data['top_year'];
+        if(!empty($data['top_year_min'])) {
+            $binds['top_year_min'] = $data['top_year_min'];
+        }
+        if(!empty($data['top_year_max'])) {
+            $binds['top_year_max'] = $data['top_year_max'];
         }
         if(!empty($data['street_name'])) {
-            $binds['street_name'] = '%'.$data['street_name'].'%';
+            $binds['street_name'] = $data['street_name'];
         }
         if(!empty($data['primary_school_within_1km'])) {
             if(is_array($data['primary_school_within_1km'])&&count($data['primary_school_within_1km'])>0)
                 $binds['primary_school_within_1km'] = '%'.implode(',',$data['primary_school_within_1km']).'%';
         }
-        if(!empty($data['total_units'])) {
-            $binds['total_units'] = $data['total_units'];
+        if(!empty($data['total_units_min'])) {
+            $binds['total_units_min'] = $data['total_units_min'];
+        }
+        if(!empty($data['total_units_max'])) {
+            $binds['total_units_max'] = $data['total_units_max'];
         }
         //PerProject
         
@@ -186,12 +209,14 @@ class IndexController extends ControllerBase
             } else continue;
         }
 
-
-        $idx=0; $conditions=""; $skipMaxBudget = false; $skipMaxArea = false;
+#echo '<pre>'; var_dump($data); echo '</pre>'; 
+        $idx=0; $conditions=""; $skipMaxBudget = false; $skipMaxArea = false; 
+        $skipMaxPsf = false; $skipMaxTotalUnits = false; $skipMaxTopYear = false;
         foreach ($data as $field => $value) {
-            if(!empty($value)) {
-                                
+            if(!empty($value)) { 
                 switch ($field) {
+                    case 'project_name':
+                    case 'street_name':
                     case 'project_type':
                     case 'proj_property_type':
                     case 'district':
@@ -203,10 +228,10 @@ class IndexController extends ControllerBase
                         $conditions .= $field ." IN ('".implode("','", $binds[$field])."') ";
                         unset($binds[$field]);
                         break;
-                    case 'project_name':
+                    //case 'project_name':
                     case 'unit_type':
                     case 'primary_school_within_1km':
-                    case 'street_name':
+                    //case 'street_name':
                         $conditions .= ($idx>0) ? " AND " : "";   
                         $conditions .= $field ." LIKE :".$field." ";
                         break;
@@ -269,6 +294,66 @@ class IndexController extends ControllerBase
                         }
                         unset($binds[$field]);
                         break;
+                    case 'total_units_min':
+                        if(!empty($data['total_units_min'])) {
+                            $conditions .= ($idx>0) ? " AND " : "";
+                            if(!empty($data['total_units_max'])) {
+                                $skipMaxTotalUnits = true;
+                                $conditions .= "`total_units` BETWEEN ".(int)$data['total_units_min']." AND ".(int)$data['total_units_max']." \n";
+                                unset($binds['total_units_max']);
+                            } else {
+                                $conditions .= "`total_units` > ".(int)$data['total_units_min']." \n";
+                            }
+                        }
+                        unset($binds[$field]);
+                        break;
+                    case 'total_units_max':
+                        if(!empty($data['total_units_max'])&&$skipMaxTotalUnits!=true) {
+                            $conditions .= ($idx>0) ? " AND " : "";
+                            $conditions .= "`total_units` < ".(int)$data['total_units_max']." \n";
+                        }
+                        unset($binds[$field]);
+                        break;
+                    case 'top_year_min':
+                        if(!empty($data['top_year_min'])) {
+                            $conditions .= ($idx>0) ? " AND " : "";
+                            if(!empty($data['top_year_max'])) {
+                                $skipMaxTopYear = true;
+                                $conditions .= "`top_year` BETWEEN ".(int)$data['top_year_min']." AND ".(int)$data['top_year_max']." \n";
+                                unset($binds['top_year_max']);
+                            } else {
+                                $conditions .= "`top_year` > ".(int)$data['top_year_min']." \n";
+                            }
+                        }
+                        unset($binds[$field]);
+                        break;
+                    case 'top_year_max':
+                        if(!empty($data['top_year_max'])&&$skipMaxTopYear!=true) {
+                            $conditions .= ($idx>0) ? " AND " : "";
+                            $conditions .= "`top_year` < ".(int)$data['top_year_max']." \n";
+                        }
+                        unset($binds[$field]);
+                        break;
+                    case 'psf_min':
+                        if(!empty($data['psf_min'])) {
+                            $conditions .= ($idx>0) ? " AND " : "";  
+                            if(!empty($data['psf_max'])) {
+                                $skipMaxPsf = true;
+                                $conditions .= " ((".(int)$data['psf_max']." < `low_psf`) OR \n";
+                                $conditions .= " (".(int)$data['psf_min']." > `low_psf`) AND (".(int)$data['psf_min']." > `high_psf`)) \n";
+                            } else {
+                                $conditions .= " ".(int)$data['psf_min']." BETWEEN `low_psf` AND `high_psf` \n";
+                            }
+                        }
+                        unset($binds[$field]);
+                        break;
+                    case 'psf_max':
+                        if(!empty($data['psf_max'])&&$skipMaxPsf!=true) {
+                            $conditions .= ($idx>0) ? " AND " : "";
+                            $conditions .= " ".(int)$data['psf_max']." BETWEEN `low_psf` AND `high_psf` \n";
+                        }
+                        unset($binds[$field]);
+                        break;
                     default:
                         $conditions .= ($idx>0) ? " AND " : "";   
                         $conditions .= $field ." = :".$field." ";
@@ -277,6 +362,8 @@ class IndexController extends ControllerBase
             }
             $idx++;
         }
+
+#echo '<pre>'; var_dump($conditions); echo '</pre>'; die();        
         $hiddenfields = array_diff($DataCols, $visCols);   
         $this->view->visCols = $NameCols;
         $this->view->hiddenCols = implode(',',array_keys($hiddenfields));

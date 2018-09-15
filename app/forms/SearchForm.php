@@ -96,20 +96,38 @@ class SearchForm extends Form
 
         // =======================
         // Project Name
-        $project_name = new Text('project_name');
+        $project_name_options=[];
+        $project_name_query = Projects::find(["columns"=>"id, project_name","order"=>"project_name asc"]);
+        foreach ($project_name_query as $key => $value)
+            $project_name_options[$value->project_name] = $value->project_name;
+        $project_name = new Select('project_name[]', $project_name_options);
         $project_name->setAttributes([
-            'class' => 'form-control',
-            'placeholder' => 'Project Name'
+            'id' => 'project_name',
+            'class' => 'form-control select2',
+            'placeholder' => 'Project Name',
+            'multiple' => true,
+            'useEmpty'  => false,
+            'emptyText' => '- Project Name -',
+            'emptyValue'=> '',
         ]);
         $project_name->setUserOption('width','col-xs-12 col-sm-12 col-md-6 col-lg-6');
         $project_name->setUserOption('input-width','col-xs-12');
         $project_name->setFilters(array('striptags', 'trim', 'string'));
-        $project_name->addValidators(array(
-            new PresenceOf(array(
-                "message" => "Project Name is required"
-            ))
-        ));
-        $this->add($project_name);
+        $this->add($project_name);        
+        // $project_name = new Text('project_name');
+        // $project_name->setAttributes([
+        //     'class' => 'form-control',
+        //     'placeholder' => 'Project Name'
+        // ]);
+        // $project_name->setUserOption('width','col-xs-12 col-sm-12 col-md-6 col-lg-6');
+        // $project_name->setUserOption('input-width','col-xs-12');
+        // $project_name->setFilters(array('striptags', 'trim', 'string'));
+        // $project_name->addValidators(array(
+        //     new PresenceOf(array(
+        //         "message" => "Project Name is required"
+        //     ))
+        // ));
+        // $this->add($project_name);
 
         // =======================
         // Total Units
@@ -225,9 +243,21 @@ data-slider-min="10" data-slider-max="1000" data-slider-step="5" data-slider-val
         // =======================
         // Property Type
         $properties_options = [];
-        $properties_query = PropertyTypes::find(["columns"=>"name","order"=>"name asc"]);
-        foreach ($properties_query as $key => $value)
-            $properties_options[$value->name] = $value->name;
+        $properties_query = Projects::find(["columns"=>"property_type","conditions"=>"property_type IS NOT NULL"]);
+        if($properties_query&&$properties_query->count()>0) {
+            foreach ($properties_query as $key => $field) {
+                if(strpos($field->property_type, ",")) {
+                    $prop_types = array_map('trim', explode(',', $field->property_type));
+                    foreach ($prop_types as $prop_type) {
+                        $properties_options[$prop_type] = $prop_type;
+                    }
+                } else {
+                    $properties_options[$field->property_type] = $field->property_type;
+                }
+            }
+        }
+
+        ksort($properties_options);       
         $property_type = new Select('property_type[]', $properties_options);
         $property_type->setAttributes([
             'id' => 'property_type',
@@ -336,7 +366,7 @@ data-slider-min="10" data-slider-max="1000" data-slider-step="5" data-slider-val
         $psf_min->setUserOption('value_max', (int)$psf_query[0]->psf_max);
         $psf_min->setUserOption('value_interval', 1);
         $psf_min->setFilters(array('striptags', 'trim', 'int'));
-        $psf_min->setDefault((int)$psf_query[0]->psf_min);
+        //$psf_min->setDefault((int)$psf_query[0]->psf_min);
         $this->add($psf_min);  
 
         $psf_max = new Text('psf_max');
@@ -354,7 +384,7 @@ data-slider-min="10" data-slider-max="1000" data-slider-step="5" data-slider-val
         $psf_max->setUserOption('value_max', (int)$psf_query[0]->psf_max);
         $psf_max->setUserOption('value_interval', 1);
         $psf_max->setFilters(array('striptags', 'trim', 'int'));
-        $psf_max->setDefault((int)$psf_query[0]->psf_max);
+        //$psf_max->setDefault((int)$psf_query[0]->psf_max);
         $this->add($psf_max); 
 
         // =======================
@@ -399,7 +429,7 @@ data-slider-min="10" data-slider-max="1000" data-slider-step="5" data-slider-val
         $top_year_min->setUserOption('value_max', (int)$top_year_query[0]->top_max);
         $top_year_min->setUserOption('value_interval', 1);
         $top_year_min->setFilters(array('striptags', 'trim', 'int'));
-        $top_year_min->setDefault((int)date("Y")-10);
+        $top_year_min->setDefault((int)$top_year_query[0]->top_min);
         $this->add($top_year_min);  
 
         $top_year_max = new Text('top_year_max');
@@ -418,7 +448,7 @@ data-slider-min="10" data-slider-max="1000" data-slider-step="5" data-slider-val
         $top_year_max->setUserOption('value_max', (int)$top_year_query[0]->top_max);
         $top_year_max->setUserOption('value_interval', 1);
         $top_year_max->setFilters(array('striptags', 'trim', 'int'));
-        $top_year_max->setDefault((int)date("Y"));
+        $top_year_max->setDefault((int)$top_year_query[0]->top_max);
         $this->add($top_year_max); 
 
         // =======================
@@ -515,7 +545,9 @@ data-slider-min="10" data-slider-max="1000" data-slider-step="5" data-slider-val
                 }
             }
         }
-        sort($primary_school_options);
+
+        ksort($primary_school_options);
+#echo '<pre>'; var_dump($primary_school_options); echo '</pre>'; die();    
         $primary_school = new Select('primary_school_within_1km[]', $primary_school_options);
         $primary_school->setAttributes([
             'id' => 'primary_school_within_1km',
@@ -533,15 +565,30 @@ data-slider-min="10" data-slider-max="1000" data-slider-step="5" data-slider-val
 
         // =======================
         // Street Name
-        $street_name = new Text('street_name');
+        $street_name_options=[];
+        $street_name_query = Projects::find(["columns"=>"street_name","conditions"=>"street_name IS NOT NULL", "order"=>"street_name asc"]);
+        foreach ($street_name_query as $key => $value) $street_name_options[$value->street_name] = $value->street_name;
+        $street_name = new Select('street_name[]', $street_name_options);
         $street_name->setAttributes([
-            'class' => 'form-control',
-            'placeholder' => 'Street Name'
+            'id' => 'street_name',
+            'class' => 'form-control select2',
+            'placeholder' => 'Street Name',
+            'multiple' => true,
         ]);
         $street_name->setUserOption('width','col-xs-12 col-sm-12 col-md-6 col-lg-6');
         $street_name->setUserOption('input-width','col-xs-12');
         $street_name->setFilters(array('striptags', 'trim', 'string'));
-        $this->add($street_name);       
+        $this->add($street_name);     
+
+        // $street_name = new Text('street_name');
+        // $street_name->setAttributes([
+        //     'class' => 'form-control',
+        //     'placeholder' => 'Street Name'
+        // ]);
+        // $street_name->setUserOption('width','col-xs-12 col-sm-12 col-md-6 col-lg-6');
+        // $street_name->setUserOption('input-width','col-xs-12');
+        // $street_name->setFilters(array('striptags', 'trim', 'string'));
+        // $this->add($street_name);       
 
         // =======================
         // Transactions
