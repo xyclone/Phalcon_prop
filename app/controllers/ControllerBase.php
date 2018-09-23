@@ -117,7 +117,7 @@ class ControllerBase extends Controller
      * @return [type]          [description]
      */ //echo '<pre>'; var_dump($results); echo '</pre>'; die();
     public function fileUrlLink($urlpath, $folder=null) {
-        $basename = preg_replace('/^.+[\\\\\\/]/', '', $urlpath);
+        $basename = str_replace(' ','%20',preg_replace('/^.+[\\\\\\/]/', '', $urlpath));
         $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
         $host =  $this->images_url.'/images/'; //$protocol.DefaultClass::$projectImgUrl;
         $imgUrl = $host.$folder;

@@ -63,15 +63,19 @@ $(document).ready(function(){
         "order": [[ 0, "asc" ]],
     });
 
-    $('#ClearItems').click(function(){
-        console.log("reset");
-        $('#project_search')[0].reset();
+    //Reset Form
+    $('#ClearItems').on('click', function() {
+        //console.log("reset");
+        $('#project_search').trigger("reset");
         $("select.select2").select2('data', {});
         $("select.select2").select2({theme: "bootstrap", width: "100%"});
-		$("#mrt").select2({	placeholder:'MRT/LRT', theme: "bootstrap", width: "100%"});
-		$("#district").select2({ placeholder:'District', theme: "bootstrap", width: "100%"});
-		$("#unit_type").select2({ placeholder:'- Select Unit Type -', theme: "bootstrap", width: "100%"});
-		$("#project_property_type").select2({ placeholder:'- Select Project Property Type -', theme: "bootstrap", width: "100%"});
+        $("select").each(function(i){     
+            if($(this).attr('name')=='mrt_distance_km') {
+                $('#'+$(this).attr('id')).select2({theme: "bootstrap", width: "100%", placeholder: '- '+$(this).attr('placeholder')+' -', 'allowClear': false, 'tags': true });
+            } else {
+                $('#'+$(this).attr('id')).select2({theme: "bootstrap", width: "100%", placeholder: '- '+$(this).attr('placeholder')+' -', 'allowClear': false});
+            }
+        });
     });
 
     //District Change

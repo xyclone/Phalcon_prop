@@ -60,9 +60,11 @@ div.DTFC_LeftBodyLiner table thead tr th  {
     <h1>Result</h1>
     <ol class="breadcrumb">
         <li><i class="fa fa-cog fa-fw"></i> Search</li>
-        <li class="active">results</li>
+        <li class="active">Results</li>
     </ol>
 </section>
+
+<div id="imagePlaceholder" style="display:none;"></div>
 
 <section class="content animated fadeIn">
     <div class="row">
@@ -77,7 +79,7 @@ div.DTFC_LeftBodyLiner table thead tr th  {
                             <thead>
                                 <tr>
                                     {% if visCols is not empty %}
-                                        {% for NameKey,NameCol in visCols %}
+                                        {% for NameKey, NameCol in visCols %}
                                             <th>{{NameCol}}</th>
                                         {% endfor %}
                                             <th class="text-center">Action</th>
@@ -93,7 +95,10 @@ div.DTFC_LeftBodyLiner table thead tr th  {
                                                     <td>{{ x[visKey] }}</td> 
                                                 {% endfor %}
                                             {% endif %}
-                                            <td><a href="#" class="btn btn-sm btn-info ajax-modal" data-toggle="modal" title="Project Details" data-target="#modal-ajax-handler" data-action="Project Details" data-id="{{ x['id'] }}" data-name="{{ x['project_name'] }}" ><i class="fa fa-building-o fa-fw"></i></a> <a href="#" class="btn btn-sm btn-warning ajax-modal" data-toggle="modal" title="Project Transactions" data-target="#modal-ajax-handler" data-action="Project Transactions" data-id="{{ x['id'] }}" data-name="{{ x['project_name'] }}" ><i class="fa fa-briefcase fa-fw"></i></a></td>
+                                            <td><a href="#" class="btn btn-sm btn-info ajax-modal" data-toggle="modal" title="Per Project Details" data-target="#modal-ajax-handler" data-action="Per Project Details" data-id="{{ x['id'] }}" data-name="{{ x['project_name'] }}" ><i class="fa fa-building-o fa-fw"></i></a> <a href="#" class="btn btn-sm btn-primary m-l-xs ajax-modal" data-toggle="modal" title="Project Images" data-target="#modal-ajax-handler" data-action="Project Images" data-id="{{ x['id'] }}" data-name="{{ x['project_name'] }}" ><i class="fa fa-picture-o fa-fw"></i></a> <a href="#" class="btn btn-sm btn-warning m-l-xs ajax-modal" data-toggle="modal" title="Project Transactions" data-target="#modal-ajax-handler" data-action="Project Transactions" data-id="{{ x['id'] }}" data-name="{{ x['project_name'] }}" ><i class="fa fa-briefcase fa-fw"></i></a></td>
+
+                                            <!-- <a href="#" class="btn btn-sm btn-primary m-l-xs ajax-modal" data-toggle="modal" title="Project Images" id="project_images" data-id="{ { x['id'] }}" data-name="{ { x['project_name'] }}" ><i class="fa fa-picture-o fa-fw"></i></a> -->
+                                            <!-- <a href="#" class="btn btn-sm btn-primary m-l-xs ajax-modal" data-toggle="modal" title="Project Images" data-target="#modal-ajax-handler" data-action="Project Images" data-id="{{ x['id'] }}" data-name="{{ x['project_name'] }}" ><i class="fa fa-picture-o fa-fw"></i></a>  -->
                                         </tr>
                                     {% endfor %}
                                 {% endif %}

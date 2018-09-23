@@ -1,20 +1,20 @@
 <?php
-defined('BASE_PATH') || define('BASE_PATH', getenv('BASE_PATH') ?: realpath(dirname(__FILE__) . '/../..'));
-defined('APP_PATH')  || define('APP_PATH', BASE_PATH . '/app');
-defined('URL')       || define('URL', 'http://<DOMAIN>');
-defined('PUBLIC_PATH')  || define('PUBLIC_PATH', URL. '/public');
-defined('BASE_URL') || define('BASE_URL', '/');
-defined('MOVE_PHOTO') || define('MOVE_PHOTO', BASE_PATH .'/public/img');
+defined('BASE_PATH')    || define('BASE_PATH', getenv('BASE_PATH') ?: realpath(dirname(__FILE__) . '/../..'));
+defined('APP_PATH')     || define('APP_PATH', BASE_PATH . '/app');
+defined('URL')          || define('URL', 'http://209.97.168.158');
+defined('PUBLIC_PATH')  || define('PUBLIC_PATH', URL);
+defined('BASE_URL')     || define('BASE_URL', '/');
+defined('MOVE_PHOTO')   || define('MOVE_PHOTO', BASE_PATH .'/public/img');
 
 use Phalcon\Logger;
 
 return new \Phalcon\Config([
     'database' => [
         'adapter'     => 'Mysql',
-        'host'        => '<MYSQLHOST>',
-        'username'    => '<USERNAME>',
-        'password'    => '<PASSWORD>',
-        'dbname'      => '<DATABASE>',
+        'host'        => 'localhost',
+        'username'    => 'property',
+        'password'    => 'hSwDAh#8[%',
+        'dbname'      => 'property',
         'charset'     => 'utf8',
     ],
     'application' => [
@@ -32,13 +32,13 @@ return new \Phalcon\Config([
     ],
     'mail' => [
         'fromName' => 'No Reply',
-        'fromEmail' => 'no-reply@<HOST>.com',
+        'fromEmail' => 'no-reply@allproperty.com',
         'smtp' => [
             'server' => 'smtp.gmail.com',
             'port' => 587,
             'security' => 'tls',
-            'username' => '<EMAIL>',
-            'password' => '<PASSWORD>'
+            'username' => 'xyclone.spam@gmail.com',
+            'password' => 'cn.j4s0n'
         ]
     ],    
     'logger' => [

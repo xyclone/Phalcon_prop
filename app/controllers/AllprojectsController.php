@@ -383,8 +383,8 @@ class AllprojectsController extends ControllerBase
                 //Html5Lightbox
                 $responseHtml .= '<div class="col-xs-12 col-sm-6 col-md-4 col-lg-3 placeholder">';
                     $responseHtml .= '<div class="imgSizeInfo">&nbsp;<span>'.$basename.' </span></div>';
-                        $responseHtml .= '<a href="'.$this->fileUrlLink($image, $folder).'" class="html5lightbox" data-group="mygroup"  data-thumbnail="'.$this->fileUrlLink($image, $folder).'" '.$dataAttr.'>';
-                            $responseHtml .= '<div class="thumbnail_new img-responsive" style="background-image: url('.$imagethumbnail.');"></div>';
+                        $responseHtml .= '<a href="'.$this->fileUrlLink($image, $folder).'" class="html5lightbox" data-fullscreenmode="true" data-transition="slide" data-group="mygroup" data-thumbnail="'.$this->fileUrlLink($image, $folder).'" '.$dataAttr.'>';
+                            $responseHtml .= '<div class="thumbnail_new img-responsive" style="background-image:url('.$imagethumbnail.');"></div>';
                         $responseHtml .= '</a>';
                 $responseHtml .= '</div>';  
             }
@@ -971,4 +971,179 @@ class AllprojectsController extends ControllerBase
         $project_type = $filter->sanitize($param['project_type'], "string");
         ProjectDetails::updateDetails(['project_id'=>$project_id,'project_type'=>$project_type]);
     }
+
+
+    public function resultImagesAction($projid)
+    {
+        $this->view->disable();
+        if (!$this->request->get())  return $this->redirectBack();
+
+        $projType="";$projPtype="";
+        $project = Projects::findFirst($projid);
+        if($project) {
+            $projType = $project->project_type;
+            $projPtype = $project->proj_property_type;
+        }
+        
+        $folder = str_replace(' ','_',$projid."_".$projType."_".$projPtype); //$projid."_".$projType."_".$projPtype;
+        $images_dir = $this->images_dir.'/'.$folder.'/';
+        $allowed_ext = implode(",", UploadClass::$allowed_ext);
+        $images = (!empty($images_dir)) ? glob($images_dir . "*.{".$allowed_ext."}", GLOB_BRACE) : [];        
+
+        if(count($images)>0 ) {
+            $urlLink = ""; $responseHtml = "";
+            $responseHtml .= "
+                <style>
+                .modal-dialog {
+                    overflow-y: initial !important
+                }
+                .modal-body {
+                    overflow-y: auto;
+                }
+                </style>";
+
+            foreach ($images as $key => $image) {
+                $ext = substr($image, strrpos($image, '.')+1);
+                $imagethumbnail = $this->fileUrlLink($image, $folder);
+                $basename = $this->fileBaseName($image);
+                $dataAttr="";
+                $imgInfo = UploadClass::getImageInfo2($this->fileUrlLink($image, $folder));
+                if(empty($imgInfo['height']) && empty($imgInfo['width'])) {
+                    $imgInfo = UploadClass::getImageInfo($this->fileUrlLink($image, $folder));
+                }
+                $responseHtml .= "<div class='row'>";
+                $responseHtml .= '<img src="'.$this->fileUrlLink($image, $folder).'" class="img-responsive" alt="">';
+                $responseHtml .= "</div>";
+            }
+        } else {
+            $responseHtml .= "<div class='row-fluid'><div class='col-sm-12 alert alert-warning'>No images attached to the project.</div></div>";
+        }
+        $this->response->setContent($responseHtml);
+        return $this->response;
+    }
+
+    /**
+     * [imagesHtmlAction description]
+     * @return [type] [description]
+     */
+    public function resultImages2Action($projid) //$projType,$projPtype,
+    {
+        $this->view->disable();
+        if (!$this->request->get())  return $this->redirectBack();
+
+        $projType="";$projPtype="";
+        $project = Projects::findFirst($projid);
+        if($project) {
+            $projType = $project->project_type;
+            $projPtype = $project->proj_property_type;
+        }
+        
+        $folder = str_replace(' ','_',$projid."_".$projType."_".$projPtype); //$projid."_".$projType."_".$projPtype;
+        $images_dir = $this->images_dir.'/'.$folder.'/';
+        $allowed_ext = implode(",", UploadClass::$allowed_ext);
+        $images = (!empty($images_dir)) ? glob($images_dir . "*.{".$allowed_ext."}", GLOB_BRACE) : [];        
+
+        if(count($images)>0 ) {
+
+                $urlLink = ""; $responseHtml = "";
+
+                $responseHtml .= "
+                <style>
+                .imgOpts { 
+                    display: inline-block;
+                    position: absolute;
+                    width: 70px;
+                    background-color: rgba(255,255,255,0.4);
+                    padding: 2px;
+                    overflow:hidden;
+                    z-index: 99;
+                }
+                .imgSizeInfo {
+                    display: inline-block;
+                    position: absolute;
+                    width: 90%;
+                    background-color: rgba(255,255,255,0.75);
+                    padding: 2px;
+                    overflow:hidden;
+                    z-index: 99;
+                    bottom: 0;
+                    margin: 0 5px 3px 0!important;
+                    padding-bottom: 2px;
+                }
+                .imgSizeInfo span {
+                    width: 100%;
+                    position: relative;
+                    text-align: right;
+                }
+
+                .placeholder {
+                    margin-top: 15px!important;
+                }
+                .sourceValue {
+                    position: relative;
+                    display: inline-block;
+                    width: 5px;
+                    color: rgba(255,255,255,0.4);
+                    z-index: 1;
+                    float: right;
+                }
+                .copylink {
+                    width: 117px !important;
+                    margin-left: 3px;
+                    margin-bottom: 3px;
+                }
+                .thumbnail_new {
+                    background-color: black;
+                    width: 225px;
+                    height: 175px;
+                    display: inline-block;
+                    background-size: contain;
+                    background-position: center center;
+                    background-repeat: no-repeat;
+                }
+
+                #html5-watermark {
+                    position: absolute !important;
+                    top: auto !important;
+                    left: auto !important; 
+                    right: 10px !important;   
+                    bottom: 56px !important;
+                }
+                </style>
+                ";
+            
+
+                $responseHtml .= "<div class='row'>";
+                foreach ($images as $key => $image) {
+                    $ext = substr($image, strrpos($image, '.')+1);
+                    $imagethumbnail = $this->fileUrlLink($image, $folder);
+                    $basename = $this->fileBaseName($image);
+                    $dataAttr="";
+                    $imgInfo = UploadClass::getImageInfo2($this->fileUrlLink($image, $folder));
+                    if(empty($imgInfo['height']) && empty($imgInfo['width'])) {
+                        $imgInfo = UploadClass::getImageInfo($this->fileUrlLink($image, $folder));
+                    }
+
+                    //Html5Lightbox
+                    $responseHtml .= '<div class="placeholder" style="display:none;" >';
+                        $responseHtml .= '<a href="'.$this->fileUrlLink($image, $folder).'" class="html5lightbox" data-group="mygroup_'.$projid.'" data-width="'.$imgInfo['width'].'" data-height="'.$imgInfo['height'].'" >';
+                            $responseHtml .= '<div class="thumbnail_new img-responsive" style="background-image: url('.$imagethumbnail.');"></div>';
+                        $responseHtml .= '</a>';
+                    $responseHtml .= '</div>';
+                }
+                $responseHtml .= "</div>";
+
+            //Initialize Lightbox
+            $responseHtml .= '<script>
+                $(document).ready(function() {
+                    $(".html5lightbox").html5lightbox();
+                });
+            </script>';
+        } else {
+            $responseHtml = false; 
+            //"<div class='row-fluid'><div class='col-sm-12 alert alert-warning'>No images attached to the project.</div></div>";
+        }
+        $this->response->setContent($responseHtml);
+        return $this->response;
+    }    
 }

@@ -99,13 +99,21 @@ class PerprojectsController extends ControllerBase
                                 case 'proj_property_type':
                                 case 'project_id':
                                 case 'project_name':
+                                    $response .= '<div class="col-xs-3">';
+                                    $project_value = (!empty($perproject->$fldname)) ? $perproject->$fldname : ''; 
+                                    $response .= '<input type="text" id="'.$fldname.'" name="'.$fldname.'" class="form-control text-strong" value="'.$project_value.'" readonly>';
+                                    $response .= '</div>';
+                                    break;
                                 case 'low_price':
                                 case 'median_price':
                                 case 'high_price':
                                     $response .= '<div class="col-xs-3">';
                                     $project_value = (!empty($perproject->$fldname)) ? $perproject->$fldname : ''; 
-                                    $response .= '<input type="text" id="'.$fldname.'" name="'.$fldname.'" class="form-control text-strong" value="'.$project_value.'" placeholder="'.ucwords(str_replace('_',' ',$fldname)).'" readonly>';
-                                    $response .= '</div>';
+                                        $response .= '<div class="input-group">';
+                                            $response .= '<span class="input-group-addon"><b>S$</b></span>'; 
+                                            $response .= '<input type="text" id="'.$fldname.'" name="'.$fldname.'" class="form-control text-strong" value="'.number_format($project_value).'" placeholder="'.ucwords(str_replace('_',' ',$fldname)).'" readonly>';
+                                        $response .= '</div>';
+                                    $response .= '</div>';                                     
                                     break;
                                 case 'no_of_units':
                                 case 'units_sold':
@@ -153,5 +161,73 @@ class PerprojectsController extends ControllerBase
         }
         return json_encode($result);
 
+    }
+
+    public function transactionsAction($projectId)
+    {
+        $this->view->disable();
+        $trxn_fields = ["project_id"=>"Project Name","unit_type"=>"Unit Type","area_sqft"=>"Area ft&sup2;","low_price"=>"Low Price","median_price"=>"Median Price","high_price"=>"High Price","no_of_units"=>"No of Units","units_sold"=>"Units Sold","units_unsold"=>"Units Unsold"];
+
+
+        $project = PerProjects::findFirst($projectId); 
+        $projects = PerProjects::find(["columns"=>implode(",",array_keys($trxn_fields)),"conditions"=>"project_id=?1","bind"=>[1=>$projectId]]);
+        
+        $response = '<div role="form" class="container">';
+        if($projects&&$projects->count()>0) {
+            $headers = array_values($trxn_fields);
+            $columns = array_keys($trxn_fields);
+            $response .= '<div class="table-responsive">
+                        <table id="table_transactions" class="table table-bordered table-hover">
+                            <thead>
+                                <tr>';
+                                    foreach ($headers as $header) {
+                                        $response .= "<th class='text-center'>$header</th>";
+                                    }    
+            $response .=        '</tr>
+                            </thead>
+                            <tbody id="list">';
+                            foreach ($projects as $key => $row) {
+            $response .=        '<tr>';
+                                foreach ($columns as $field) {
+                                    switch ($field) {
+                                        case 'project_id':
+                                            $response .= "<td>".$project->project_name."</td>";
+                                            break;
+                                        case 'no_of_units':
+                                        case 'units_sold':
+                                        case 'units_unsold':
+                                            $response .= "<td class='text-center'>".number_format($row->$field)."</td>";
+                                            break;
+                                        case 'low_price':
+                                        case 'median_price':
+                                        case 'high_price':
+                                            $response .= "<td class='text-right' style='padding-right: 10px;'>".number_format($row->$field)."</td>";
+                                            break;
+                                        case 'area_sqft':
+                                            $response .= "<td class='text-right' style='padding-right: 10px;'>".$row->$field."</td>";
+                                            break;
+                                        default:
+                                            $response .= "<td>".$row->$field."</td>";  
+                                            break;
+                                    }                           
+                                }                                
+            $response .=        '</tr>';
+                            }
+            $response .=    '</tbody>
+                        </table>
+                    </div>';
+        } else {
+            $response .= '<div class="container"><div class="col-sm-12 alert alert-warning">No per project found on the project.</div></div>';
+        }
+        $response .= '</div>';
+
+        $response .="<script>
+                    $(function () {
+                      $('#table_transactions').DataTable({
+                        'lengthMenu': [[-1],['All Rows']]
+                        });
+                    });
+                </script>";
+        return $response;
     }
 }

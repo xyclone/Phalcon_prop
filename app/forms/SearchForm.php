@@ -150,7 +150,7 @@ class SearchForm extends Form
         $total_units_min->setUserOption('value_max', $query_units_max->total_units_max);
         $total_units_min->setUserOption('value_interval', 5);
         $total_units_min->setFilters(array('striptags', 'trim', 'int'));
-        $total_units_min->setDefault((int)$query_units_min->total_units_min+5);
+        $total_units_min->setDefault(0);
         $this->add($total_units_min);  
 
         $total_units_max = new Text('total_units_max');
@@ -166,10 +166,10 @@ class SearchForm extends Form
         $total_units_max->setUserOption('is-touchspin', true);
         $total_units_max->setUserOption('prefix-label', 'Max Units');
         $total_units_max->setUserOption('value_min', $query_units_min->total_units_min);
-        $total_units_max->setUserOption('value_max', $query_units_max->total_units_max);
+        $total_units_max->setUserOption('value_max', ($query_units_max->total_units_max));
         $total_units_max->setUserOption('value_interval', 5);
         $total_units_max->setFilters(array('striptags', 'trim', 'int'));
-        $total_units_max->setDefault((int)$query_units_max->total_units_max-5);
+        $total_units_max->setDefault((int)($query_units_max->total_units_max));
         $this->add($total_units_max);  
 
 /*
@@ -298,8 +298,8 @@ data-slider-min="10" data-slider-max="1000" data-slider-step="5" data-slider-val
         ]);
         $min_budget->setUserOption('width','col-xs-12 col-sm-12 col-md-6 col-lg-6');
         $min_budget->setUserOption('input-width','col-xs-12');
-        $min_budget->setUserOption('postfix-addon', true);
-        $min_budget->setUserOption('postfix-label', 'S$');
+        $min_budget->setUserOption('prefix-addon', true);
+        $min_budget->setUserOption('prefix-label', 'S$');
         $min_budget->setFilters(array('striptags', 'trim', 'int'));
         $this->add($min_budget);
 
@@ -313,8 +313,8 @@ data-slider-min="10" data-slider-max="1000" data-slider-step="5" data-slider-val
         ]);
         $max_budget->setUserOption('width','col-xs-12 col-sm-12 col-md-6 col-lg-6');
         $max_budget->setUserOption('input-width','col-xs-12');
-        $max_budget->setUserOption('postfix-addon', true);
-        $max_budget->setUserOption('postfix-label', 'S$');
+        $max_budget->setUserOption('prefix-addon', true);
+        $max_budget->setUserOption('prefix-label', 'S$');
         $max_budget->setFilters(array('striptags', 'trim', 'int'));
         $this->add($max_budget);
 
@@ -412,43 +412,55 @@ data-slider-min="10" data-slider-max="1000" data-slider-step="5" data-slider-val
         // $top_year->setFilters(array('striptags', 'trim', 'int'));
         // $this->add($top_year);   
 
+        $year_options = [];
         $top_year_query = Projects::findTopYear();
-        $top_year_min = new Text('top_year_min');
+        for ($year_minmax = $top_year_query[0]->top_min; $year_minmax <= $top_year_query[0]->top_max; $year_minmax++) {
+            $year_options[$year_minmax] = $year_minmax;
+        }
+        $top_year_min = new Select('top_year_min', $year_options);
         $top_year_min->setLabel('Min TOP');
         $top_year_min->setAttributes([
-            'class' => 'form-control',
+            'class' => 'form-control select2',
             'placeholder' => 'Top Year Min',
             'onkeypress' => 'return isNumberKey(event)',
+            'useEmpty'  => true,
+            'emptyText' => '- Select Min TOP -',
+            'emptyValue'=> '',
         ]);
         $top_year_min->setUserOption('width','col-xs-12 col-sm-12 col-md-3 col-lg-3');
         $top_year_min->setUserOption('label-width','col-xs-12 col-sm-12 col-md-12 col-lg-12');
-        $top_year_min->setUserOption('input-width','col-xs-12 col-sm-12 col-md-12 col-lg-12');
-        $top_year_min->setUserOption('is-touchspin', true);
+        $top_year_min->setUserOption('input-width','col-xs-12 col-sm-12 col-md-12 col-lg-12');       
+        $top_year_min->setUserOption('prefix-addon', true);
         $top_year_min->setUserOption('prefix-label', 'Min TOP');
-        $top_year_min->setUserOption('value_min', (int)$top_year_query[0]->top_min);
-        $top_year_min->setUserOption('value_max', (int)$top_year_query[0]->top_max);
-        $top_year_min->setUserOption('value_interval', 1);
+        //$top_year_min->setUserOption('is-touchspin', true);
+        // $top_year_min->setUserOption('value_min', (int)$top_year_query[0]->top_min);
+        // $top_year_min->setUserOption('value_max', (int)$top_year_query[0]->top_max);
+        // $top_year_min->setUserOption('value_interval', 1);
         $top_year_min->setFilters(array('striptags', 'trim', 'int'));
-        $top_year_min->setDefault((int)$top_year_query[0]->top_min);
+        //$top_year_min->setDefault((int)$top_year_query[0]->top_min);
         $this->add($top_year_min);  
 
-        $top_year_max = new Text('top_year_max');
+        $top_year_max = new Select('top_year_max', $year_options);
         $top_year_max->setLabel('Max TOP');
         $top_year_max->setAttributes([
-            'class' => 'form-control',
+            'class' => 'form-control select2',
             'placeholder' => 'Top Year Max',
             'onkeypress' => 'return isNumberKey(event)',
+            'useEmpty'  => true,
+            'emptyText' => '- Select Min TOP -',
+            'emptyValue'=> '',
         ]);
         $top_year_max->setUserOption('width','col-xs-12 col-sm-12 col-md-3 col-lg-3');
         $top_year_max->setUserOption('label-width','col-xs-12 col-sm-12 col-md-12 col-lg-12');
         $top_year_max->setUserOption('input-width','col-xs-12 col-sm-12 col-md-12 col-lg-12');
-        $top_year_max->setUserOption('is-touchspin', true);
+        $top_year_max->setUserOption('prefix-addon', true);
         $top_year_max->setUserOption('prefix-label', 'Max TOP');
-        $top_year_max->setUserOption('value_min', (int)$top_year_query[0]->top_min);
-        $top_year_max->setUserOption('value_max', (int)$top_year_query[0]->top_max);
-        $top_year_max->setUserOption('value_interval', 1);
+        //$top_year_max->setUserOption('is-touchspin', true);
+        // $top_year_max->setUserOption('value_min', (int)$top_year_query[0]->top_min);
+        // $top_year_max->setUserOption('value_max', (int)$top_year_query[0]->top_max);
+        // $top_year_max->setUserOption('value_interval', 1);
         $top_year_max->setFilters(array('striptags', 'trim', 'int'));
-        $top_year_max->setDefault((int)$top_year_query[0]->top_max);
+        //$top_year_max->setDefault((int)$top_year_query[0]->top_max);
         $this->add($top_year_max); 
 
         // =======================

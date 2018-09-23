@@ -15,6 +15,75 @@ class SearchClass
 		return $response;
 	}
 
+	public static $ns_project_fields = [
+		'project_name'=>'Project Name',
+		'old_project_name'=>'Project Name 2',
+		'status'=>'Status',
+		'status_date'=>'Date',
+		'status2'=>'Status2',
+		'status2_date'=>'Date2',
+		'top_year'=>'TOP Yr',
+		'total_units'=>'Total Units',
+		'old_total_units'=>'Total Units Sold',
+		'total_available_units'=>'Available Total Units',
+		'available_date'=>'Available Date',
+		'available_unit_type'=>'Available Unit Type',
+		'low_psf'=>'Low psf',
+		'median_psf'=>'Median psf',
+		'high_psf'=>'High psf',
+		'no_transactions'=>'Number of Transactions',
+		'transaction_month'=>'Transaction Month',
+		'district'=>'District',
+		'planning_area'=>'Planning Area',
+		'street_name'=>'Street Name',
+		'mrt'=>'MRT LRT',
+		'mrt_distance_km'=>'Distance (km)',
+		'tenure'=>'Tenure',
+		'property_type'=>'Property Type',
+		'site_area_sqft'=>'Site Area sqft',
+		'rental_median_psf_pm'=>'Rental Median psf pm',
+		'no_of_rentals'=>'Number of Rentals',
+		'developer'=>'Developer Owner',
+		'marketing_agency'=>'Mkting Agency',
+	];
+	
+	public static $cs_project_fields = [
+		'project_name'=>'Project Name',
+		'old_project_name'=>'Project Name 2',
+		'status'=>'Status',
+		'status_date'=>'Date',
+		'status2'=>'Status2',
+		'status2_date'=>'Date2',
+		'total_units'=>'Total Units',
+		'district'=>'District',
+		'planning_area'=>'Planning Area',
+		'street_name'=>'Street Name',
+		'mrt'=>'MRT LRT',
+		'mrt_distance_km'=>'Distance (km)',
+		'tenure'=>'Tenure',
+		'property_type'=>'Property Type',
+		'site_area_sqft'=>'Site Area sqft',
+		'primary_school_within_1km'=>'Primary School within 1km',
+	];
+
+	public static $gls_project_fields = [
+		'project_name'=>'Project Name',
+		'old_project_name'=>'Project Name 2',
+		'status'=>'Status',
+		'status_date'=>'Date',
+		'status2'=>'Status2',
+		'status2_date'=>'Date2',
+		'total_units'=>'Total Units',
+		'district'=>'District',
+		'planning_area'=>'Planning Area',
+		'street_name'=>'Street Name',
+		'mrt'=>'MRT LRT',
+		'mrt_distance_km'=>'Distance (km)',
+		'property_type'=>'Property Type',
+		'site_area_sqft'=>'Site Area sqft',
+		'primary_school_within_1km'=>'Primary School within 1km',
+	];
+
 	public function unitOptions()
 	{
 		$response = [

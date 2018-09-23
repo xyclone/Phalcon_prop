@@ -1,7 +1,7 @@
 <!-- include CSS -->
 {{partial("index/partials/css")}}
 
-<section class="content animated fadeIn" style="padding-top: 40px;">
+<section class="content animated fadeIn" style="padding-top: 0px; margin-bottom: 25px;">
     <div class="row">
         <div class="col-lg-10 col-lg-offset-1 col-md-8 col-md-offset-2 col-sm-12 col-xs-12">
             <div class="box box-primary">
@@ -36,9 +36,18 @@
                                                     decimals: 0,
                                                     boostat: 5,
                                                     maxboostedstep: 10,
-                                                    prefix: "{{ field.getLabel() }}"
+                                                    prefix: "<b>{{ field.getLabel() }}</b>"
                                                 });
                                             </script> 
+                                        </div>
+                                    </div>
+                                {% elseif field.getUserOption('prefix-addon') %}
+                                    <div class="form-group {{ field.getUserOption('group-req') }} {{ field.getUserOption('width') }} {{ field.getUserOption('ishidden') }}">
+                                        <div class="{{ field.getUserOption('input-width') }}">
+                                            <div class="input-group">
+                                                <span class="input-group-addon"><b>{{field.getUserOption('prefix-label')}}</b></span>
+                                                {{ field }}
+                                            </div>
                                         </div>
                                     </div>
                                 {% elseif field.getUserOption('postfix-addon') %}

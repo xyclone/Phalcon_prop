@@ -345,6 +345,8 @@ class Projects extends \Phalcon\Mvc\Model
                 case 'status_date':
                 case 'status2_date':
                 case 'date_updated':
+                case 'transaction_month':
+                case 'available_date':
                     $sql .= "DATE_FORMAT($value,'%d-%b-%Y') $value, \n";
                     break;
                 case 'description':
